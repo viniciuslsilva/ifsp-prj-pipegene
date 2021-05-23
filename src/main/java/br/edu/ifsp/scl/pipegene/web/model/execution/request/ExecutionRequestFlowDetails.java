@@ -4,9 +4,9 @@ import java.util.UUID;
 
 public class ExecutionRequestFlowDetails {
 
-    public UUID providerId;
-    public String inputType;
-    public String outputType;
+    private UUID providerId;
+    private String inputType;
+    private String outputType;
 
     public ExecutionRequestFlowDetails() {
     }
@@ -25,5 +25,17 @@ public class ExecutionRequestFlowDetails {
                 ", inputType='" + inputType + '\'' +
                 ", outputType='" + outputType + '\'' +
                 '}';
+    }
+
+    public UUID getProviderId() {
+        return providerId;
+    }
+
+    public String getInputType() {
+        return inputType;
+    }
+
+    public String getOutputType() {
+        return outputType;
     }
 }

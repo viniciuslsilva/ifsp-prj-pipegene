@@ -7,8 +7,7 @@ public class ExecutionRequest {
 
     private List<ExecutionRequestFlowDetails> executionRequestFlowDetails;
 
-    public ExecutionRequest() {
-    }
+    public ExecutionRequest() { }
 
     public ExecutionRequest(List<ExecutionRequestFlowDetails> executionRequestFlowDetails) {
         this.executionRequestFlowDetails = executionRequestFlowDetails;

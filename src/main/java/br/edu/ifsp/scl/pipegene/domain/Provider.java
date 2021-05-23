@@ -30,7 +30,7 @@ public class Provider {
 
 
     public static Provider fromExecutionRequestFlowDetails(ExecutionRequestFlowDetails e) {
-        return new Provider(e.providerId, e.inputType, e.outputType);
+        return new Provider(e.getProviderId(), e.getInputType(), e.getOutputType());
     }
 
     public UUID getId() {

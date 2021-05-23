@@ -25,7 +25,7 @@ public class ExecutionController {
         UUID processId = executionService.addNewExecution(projectId, executionRequest);
 
         ExecutionResponse response = ExecutionResponse.builder()
-                .id(UUID.randomUUID())
+                .requestId(UUID.randomUUID())
                 .processId(processId)
                 .build();
 

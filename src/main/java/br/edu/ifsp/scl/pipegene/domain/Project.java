@@ -17,4 +17,18 @@ public class Project {
     public static Project of(UUID id, String datasetUrl, String name) {
         return new Project(id, datasetUrl, name);
     }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getDatasetUrl() {
+        return datasetUrl;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
 }
