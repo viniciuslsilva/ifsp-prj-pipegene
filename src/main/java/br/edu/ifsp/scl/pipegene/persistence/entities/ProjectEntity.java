@@ -1,5 +1,7 @@
 package br.edu.ifsp.scl.pipegene.persistence.entities;
 
+import br.edu.ifsp.scl.pipegene.domain.Project;
+
 import java.util.UUID;
 
 public class ProjectEntity {
@@ -8,10 +10,14 @@ public class ProjectEntity {
     private String datasetUrl;
     private String name;
 
-    public ProjectEntity(UUID id, String datasetUrl, String name) {
+    private ProjectEntity(UUID id, String datasetUrl, String name) {
         this.id = id;
         this.datasetUrl = datasetUrl;
         this.name = name;
+    }
+
+    public static ProjectEntity of(UUID id, String datasetUrl, String name) {
+        return new ProjectEntity(id, datasetUrl, name);
     }
 
     public UUID getId() {
@@ -36,5 +42,9 @@ public class ProjectEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Project toProject() {
+        return Project.of(id, datasetUrl, name);
     }
 }

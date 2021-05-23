@@ -1,4 +1,4 @@
-package br.edu.ifsp.scl.pipegene.persistence.entities;
+package br.edu.ifsp.scl.pipegene.domain;
 
 
 public enum ExecutionStatusEnum {

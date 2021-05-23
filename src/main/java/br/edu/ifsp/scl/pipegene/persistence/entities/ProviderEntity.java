@@ -1,5 +1,7 @@
 package br.edu.ifsp.scl.pipegene.persistence.entities;
 
+import br.edu.ifsp.scl.pipegene.domain.Provider;
+
 import java.util.*;
 
 public class ProviderEntity {
@@ -9,10 +11,18 @@ public class ProviderEntity {
     private String name;
     private String providerUrl;
 
-    public ProviderEntity(UUID id, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
+    private ProviderEntity(UUID id, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
         this.id = id;
         this.inputSupportedTypes = new HashSet<>(inputSupportedTypes);
         this.outputSupportedTypes = new HashSet<>(outputSupportedTypes);
+    }
+
+    public static ProviderEntity of(UUID id, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
+        return new ProviderEntity(id, inputSupportedTypes, outputSupportedTypes);
+    }
+
+    public Provider toProvider() {
+        return Provider.of(id, inputSupportedTypes, outputSupportedTypes);
     }
 
     public UUID getId() {

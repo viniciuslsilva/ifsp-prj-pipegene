@@ -1,7 +1,5 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
-import br.edu.ifsp.scl.pipegene.persistence.entities.ProjectEntity;
-
 import java.util.UUID;
 
 public class Project {
@@ -10,7 +8,13 @@ public class Project {
     private String datasetUrl;
     private String name;
 
-    public static Project from(ProjectEntity projectEntity) {
-        return new Project();
+    private Project(UUID id, String datasetUrl, String name) {
+        this.id = id;
+        this.datasetUrl = datasetUrl;
+        this.name = name;
+    }
+
+    public static Project of(UUID id, String datasetUrl, String name) {
+        return new Project(id, datasetUrl, name);
     }
 }

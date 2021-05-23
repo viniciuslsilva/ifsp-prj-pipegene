@@ -7,7 +7,6 @@ import br.edu.ifsp.scl.pipegene.web.model.execution.response.ProjectExecutionSta
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.UUID;
 
 @RestController

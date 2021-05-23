@@ -1,29 +1,39 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
-import br.edu.ifsp.scl.pipegene.persistence.entities.ProviderEntity;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequestFlowDetails;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class Provider {
 
     private UUID id;
-    private List<String> inputSupportedTypes;
-    private List<String> outputSupportedTypes;
+    private Set<String> inputSupportedTypes;
+    private Set<String> outputSupportedTypes;
 
-    public Provider(UUID id, String inputSupportedType, String outputSupportedType) {
+    private Provider(UUID id, String inputSupportedType, String outputSupportedType) {
         this.id = id;
-        this.inputSupportedTypes = Collections.singletonList(inputSupportedType);
-        this.outputSupportedTypes = Collections.singletonList(outputSupportedType);
+        this.inputSupportedTypes = Set.of(inputSupportedType);
+        this.outputSupportedTypes = Set.of(outputSupportedType);
     }
 
-    public static Provider from(ExecutionRequestFlowDetails e) {
+    private Provider(UUID id, Set<String> inputSupportedType, Set<String> outputSupportedType) {
+        this.id = id;
+        this.inputSupportedTypes = new HashSet<>(inputSupportedType);
+        this.outputSupportedTypes = new HashSet<>(outputSupportedType);
+    }
+
+    public static Provider of(UUID id, Set<String> inputSupportedType, Set<String> outputSupportedType) {
+        return new Provider(id, inputSupportedType, outputSupportedType);
+    }
+
+
+    public static Provider fromExecutionRequestFlowDetails(ExecutionRequestFlowDetails e) {
         return new Provider(e.providerId, e.inputType, e.outputType);
     }
 
-    public ProviderEntity toProviderEntity() {
-        return new ProviderEntity(id, inputSupportedTypes, outputSupportedTypes);
+    public UUID getId() {
+        return id;
     }
 }
