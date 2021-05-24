@@ -39,6 +39,14 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     }
 
     @Override
+    public Optional<ExecutionStatus> findExecutionStatusByExecutionId(UUID executionId) {
+        if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
+            return Optional.of(fakeDatabase.EXECUTION_STATUS_MAP.get(executionId).toExecutionStatus());
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public void saveExecutionStatus(ExecutionStatus executionStatus) {
         ExecutionStatusEntity entity = ExecutionStatusEntity.of(executionStatus);
         fakeDatabase.EXECUTION_STATUS_MAP.put(entity.getId(), entity);

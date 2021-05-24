@@ -1,1 +1,9 @@
+server:
+  port: 8080
 
+
+execution:
+  batch-size: 10
+
+cron:
+  expression: '0 */10 * ? * *' #Every 10 minutes

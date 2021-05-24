@@ -8,4 +8,6 @@ public interface QueueService {
 
     UUID add(ExecutionRequest executionRequest);
 
+    ExecutionQueueElement pool();
+
 }

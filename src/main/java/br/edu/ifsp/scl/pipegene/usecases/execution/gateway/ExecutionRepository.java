@@ -17,6 +17,8 @@ public interface ExecutionRepository {
 
     Optional<ExecutionStatus> findExecutionStatusByProjectIdAndExecutionId(UUID projectId, UUID executionId);
 
+    Optional<ExecutionStatus> findExecutionStatusByExecutionId(UUID executionId);
+
     void saveExecutionStatus(ExecutionStatus executionStatus);
 
 }
