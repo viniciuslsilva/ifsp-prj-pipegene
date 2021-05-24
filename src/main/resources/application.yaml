@@ -3,7 +3,7 @@ server:
 
 
 execution:
-  batch-size: 10
+  batch-size: 0
 
 cron:
   expression: '0 */10 * ? * *' #Every 10 minutes
