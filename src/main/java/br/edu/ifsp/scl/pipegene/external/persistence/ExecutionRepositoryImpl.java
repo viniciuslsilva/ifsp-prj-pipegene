@@ -13,21 +13,27 @@ import java.util.UUID;
 @Repository
 public class ExecutionRepositoryImpl implements ExecutionRepository {
 
+    private final FakeDatabase fakeDatabase;
+
+    public ExecutionRepositoryImpl(FakeDatabase fakeDatabase) {
+        this.fakeDatabase = fakeDatabase;
+    }
+
     @Override
     public Boolean projectExists(UUID projectId) {
-        return FakeDatabase.PROJECTS.containsKey(projectId);
+        return fakeDatabase.PROJECTS.containsKey(projectId);
     }
 
     @Override
     public Boolean bathProviderInfoIsValid(List<Provider> providersBatch) {
         return providersBatch.stream()
-                .anyMatch(p -> !FakeDatabase.PROVIDERS.containsKey(p.getId()));
+                .anyMatch(p -> !fakeDatabase.PROVIDERS.containsKey(p.getId()));
     }
 
     @Override
     public Optional<ExecutionStatus> findExecutionStatusByProjectIdAndExecutionId(UUID projectId, UUID executionId) {
-        if (FakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
-            return Optional.of(FakeDatabase.EXECUTION_STATUS_MAP.get(executionId).toExecutionStatus());
+        if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
+            return Optional.of(fakeDatabase.EXECUTION_STATUS_MAP.get(executionId).toExecutionStatus());
         }
         return Optional.empty();
     }
@@ -35,6 +41,6 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     @Override
     public void saveExecutionStatus(ExecutionStatus executionStatus) {
         ExecutionStatusEntity entity = ExecutionStatusEntity.of(executionStatus);
-        FakeDatabase.EXECUTION_STATUS_MAP.put(entity.getId(), entity);
+        fakeDatabase.EXECUTION_STATUS_MAP.put(entity.getId(), entity);
     }
 }

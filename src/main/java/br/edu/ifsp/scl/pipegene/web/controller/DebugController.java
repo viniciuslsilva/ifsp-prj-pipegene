@@ -13,12 +13,18 @@ import br.edu.ifsp.scl.pipegene.external.persistence.*;
 @RestController
 public class DebugController {
 
+    private final FakeDatabase fakeDatabase;
+
+    public DebugController(FakeDatabase fakeDatabase) {
+        this.fakeDatabase = fakeDatabase;
+    }
+
     @GetMapping("/debug")
     public ResponseEntity<?> getState() {
         Map<String, Object> map = new HashMap<>();
-        map.put("projects", FakeDatabase.PROJECTS);
-        map.put("providers", FakeDatabase.PROVIDERS);
-        map.put("execution_status", FakeDatabase.EXECUTION_STATUS_MAP);
+        map.put("projects", fakeDatabase.PROJECTS);
+        map.put("providers", fakeDatabase.PROVIDERS);
+        map.put("execution_status", fakeDatabase.EXECUTION_STATUS_MAP);
         map.put("file_names", LocalStorageService.FILES);
 
         return ResponseEntity.ok(map);
