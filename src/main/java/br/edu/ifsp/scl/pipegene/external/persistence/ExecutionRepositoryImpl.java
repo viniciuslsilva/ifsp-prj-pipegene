@@ -27,7 +27,8 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     @Override
     public Boolean bathProviderInfoIsValid(List<Provider> providersBatch) {
         return providersBatch.stream()
-                .anyMatch(p -> !fakeDatabase.PROVIDERS.containsKey(p.getId()));
+                .filter(p -> fakeDatabase.PROVIDERS.containsKey(p.getId()))
+                .count() == providersBatch.size();
     }
 
     @Override
