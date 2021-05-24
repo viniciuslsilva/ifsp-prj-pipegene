@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30" shutdownHook="disable">
+    <Properties>
+        <Property name="DEFAULT_PATTERN">%highlight{[%level]} %style{[%date{ISO8601}] [%t] [%c{1}]}{Magenta} %msg%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="${DEFAULT_PATTERN}"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <!-- Default log level -->
+        <AsyncRoot level="WARN" additivity="false">
+            <AppenderRef ref="CONSOLE"/>
+        </AsyncRoot>
+        <!-- IFSP applications log level -->
+        <AsyncLogger level="${env:LOG_LEVEL:-INFO}" name="br.edu.ifsp"/>
+    </Loggers>
+</Configuration>
