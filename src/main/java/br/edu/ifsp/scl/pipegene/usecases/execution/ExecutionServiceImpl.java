@@ -5,6 +5,8 @@ import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionRepository;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.QueueService;
+import br.edu.ifsp.scl.pipegene.web.exception.GenericResourceException;
+import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +29,7 @@ public class ExecutionServiceImpl implements ExecutionService {
     public UUID addNewExecution(UUID projectId, ExecutionRequest executionRequest) {
         Boolean projectExists = executionRepository.projectExists(projectId);
         if (!projectExists) {
-            throw new IllegalArgumentException(); // TODO(create a custom exception)
+            throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
         Boolean executionRequestIsValid = executionRepository.bathProviderInfoIsValid(
@@ -37,7 +39,7 @@ public class ExecutionServiceImpl implements ExecutionService {
         );
 
         if (!executionRequestIsValid) {
-            throw new IllegalArgumentException(); // TODO(create a custom exception)
+            throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Execution Request");
         }
 
         UUID processId = queueService.add(executionRequest);
@@ -52,13 +54,13 @@ public class ExecutionServiceImpl implements ExecutionService {
     public String checkProjectExecutionStatus(UUID projectId, UUID executionId) {
         Boolean projectExists = executionRepository.projectExists(projectId);
         if (!projectExists) {
-            throw new IllegalArgumentException(); // TODO(create a custom exception)
+            throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
         Optional<ExecutionStatus> opt = executionRepository.findExecutionStatusByProjectIdAndExecutionId(projectId, executionId);
 
         if (opt.isEmpty()) {
-            throw new IllegalArgumentException(); // TODO(create a custom exception)
+            throw new ResourceNotFoundException("Not found execution with id: " + executionId);
         }
 
         return opt.get().getStatus().name();

@@ -3,6 +3,7 @@ package br.edu.ifsp.scl.pipegene.usecases.project;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
+import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +32,7 @@ public class ProjectServiceImpl implements ProjectService {
         Optional<Project> optional = projectRepository.findProjectById(projectId);
 
         if (optional.isEmpty()) {
-            throw new IllegalArgumentException(); // TODO(create a custom exception)
+            throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
         return optional.get();
