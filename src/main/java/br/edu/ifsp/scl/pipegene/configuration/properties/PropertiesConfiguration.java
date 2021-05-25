@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class PropertiesConfiguration {
 
     @Bean
-    @ConfigurationProperties(prefix = "execution.batch-size")
+    @ConfigurationProperties(prefix = "execution")
     public ExecutionProperties executionProperties() {
         return new ExecutionProperties();
     }

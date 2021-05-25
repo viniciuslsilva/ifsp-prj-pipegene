@@ -1,11 +1,9 @@
 package br.edu.ifsp.scl.pipegene.usecases.producer;
 
 import br.edu.ifsp.scl.pipegene.configuration.properties.model.ExecutionProperties;
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStatus;
-import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionRepository;
+import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionTransaction;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.ExecutionQueueElement;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.QueueService;
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequestFlowDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -23,13 +21,15 @@ public class SendExecutionsToProviders {
     private final Logger logger = LoggerFactory.getLogger(SendExecutionsToProviders.class);
     private final QueueService queueService;
     private final ExecutionProperties executionProperties;
-    private final ExecutionRepository executionRepository;
+    private final ExecutionTransaction executionTransaction;
 
-    public SendExecutionsToProviders(QueueService queueService, ExecutionProperties executionProperties, ExecutionRepository executionRepository) {
+    public SendExecutionsToProviders(QueueService queueService, ExecutionProperties executionProperties,
+                                     ExecutionTransaction executionTransaction) {
         this.queueService = queueService;
         this.executionProperties = executionProperties;
-        this.executionRepository = executionRepository;
+        this.executionTransaction = executionTransaction;
     }
+
 
     @Async
     @Scheduled(cron = "${cron.expression}")
@@ -45,24 +45,12 @@ public class SendExecutionsToProviders {
                 break;
             }
 
-            ExecutionStatus executionStatus = executionRepository
-                    .findExecutionStatusByExecutionId(queueElement.getId())
-                    .orElseThrow();
-
-            executionStatus.addExecutionRequestFlowDetails(queueElement.getExecutionRequestFlowDetails());
-            // Updated database with new state of execution status could be a great idea
-
-            applyExecutionRequest(executionStatus.firstStep());
+            executionTransaction.start(queueElement);
 
             amountSent++;
         }
 
-        logger.info("Finished send executions async  - " + System.currentTimeMillis() / 1000);
-    }
-
-
-    private void applyExecutionRequest(ExecutionRequestFlowDetails executionRequestFlowDetails) {
-        // TODO retrieve project and provider then send request for provider service
+        logger.info("Finished send executions async  - " + amountSent);
     }
 
 }

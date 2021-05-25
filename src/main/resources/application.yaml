@@ -6,4 +6,5 @@ execution:
   batch-size: 0
 
 cron:
+#  expression: '0/10 * * ? * *' #Every 10 seconds
   expression: '0 */10 * ? * *' #Every 10 minutes

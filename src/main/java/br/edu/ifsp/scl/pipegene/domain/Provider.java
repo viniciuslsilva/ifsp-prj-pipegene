@@ -2,6 +2,7 @@ package br.edu.ifsp.scl.pipegene.domain;
 
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequestFlowDetails;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -28,12 +29,24 @@ public class Provider {
         return new Provider(id, inputSupportedType, outputSupportedType);
     }
 
-
     public static Provider fromExecutionRequestFlowDetails(ExecutionRequestFlowDetails e) {
         return new Provider(e.getProviderId(), e.getInputType(), e.getOutputType());
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public boolean isInputSupportedType(String inputType) {
+        return inputSupportedTypes.contains(inputType);
+    }
+
+    public boolean isOutputSupportedType(String outputType) {
+        return outputSupportedTypes.contains(outputType);
+    }
+
+
+    public URI getURI() {
+        return URI.create("http://localhost:5000/v1/process");
     }
 }

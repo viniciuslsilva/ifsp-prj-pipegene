@@ -1,13 +1,14 @@
 package br.edu.ifsp.scl.pipegene.external.storage.localstorage;
 
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -16,6 +17,8 @@ import java.util.stream.Stream;
 
 @Service
 public class LocalStorageService implements ObjectStorageService {
+    private final Logger logger = LoggerFactory.getLogger(LocalStorageService.class);
+
     private static final String UPLOAD_PATH = "src/main/resources/static/uploads/";
     public static final Set<String> FILES = loadFiles();
 
@@ -33,6 +36,17 @@ public class LocalStorageService implements ObjectStorageService {
             e.printStackTrace();
             throw new IllegalArgumentException(); // TODO(create a custom exception)
         }
+    }
+
+    @Override
+    public File getObject(String filename) {
+        logger.info(UPLOAD_PATH+filename);
+        if (!FILES.contains(filename)) {
+            logger.info("File not found:" + filename);
+            return null;
+        }
+
+        return new File(getClass().getResource("/static/uploads/" + filename).getFile());
     }
 
     private static Set<String> loadFiles() {

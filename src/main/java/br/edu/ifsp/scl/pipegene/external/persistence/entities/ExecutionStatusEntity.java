@@ -2,7 +2,9 @@ package br.edu.ifsp.scl.pipegene.external.persistence.entities;
 
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStatus;
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
+import br.edu.ifsp.scl.pipegene.domain.Project;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ExecutionStatusEntity {
@@ -10,24 +12,31 @@ public class ExecutionStatusEntity {
     private UUID projectId;
     private String status;
 
+    private Integer currentStep;
+    private List<?> steps;
+
     // TODO("Add attributes created_at and limit_date")
 
-    private ExecutionStatusEntity(UUID id, UUID projectId, String status) {
+    private ExecutionStatusEntity(UUID id, UUID projectId, String status, Integer currentStep, List<?> steps) {
         this.id = id;
         this.projectId = projectId;
         this.status = status;
+        this.currentStep = currentStep;
+        this.steps = steps;
     }
 
     public static ExecutionStatusEntity of(ExecutionStatus executionStatus) {
         return new ExecutionStatusEntity(
                 executionStatus.getId(),
-                executionStatus.getProjectId(),
-                executionStatus.getStatus().name()
+                executionStatus.getProject().getId(),
+                executionStatus.getStatus().name(),
+                executionStatus.getCurrentStep(),
+                executionStatus.getSteps()
         );
     }
 
-    public ExecutionStatus toExecutionStatus() {
-        return ExecutionStatus.of(id, projectId, ExecutionStatusEnum.valueOf(status));
+    public ExecutionStatus toExecutionStatus(Project project) {
+        return ExecutionStatus.of(id, project, ExecutionStatusEnum.valueOf(status), currentStep, steps);
     }
 
     public UUID getId() {

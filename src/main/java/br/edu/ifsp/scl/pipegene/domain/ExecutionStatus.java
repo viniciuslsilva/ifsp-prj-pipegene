@@ -9,25 +9,33 @@ import java.util.stream.Collectors;
 
 public class ExecutionStatus {
     private UUID id;
-    private UUID projectId;
+    private Project project;
     private ExecutionStatusEnum status;
 
     private Integer currentStep = 0;
     private List<WrapperExecutionProgress> steps = new ArrayList<>();
 
-    private ExecutionStatus(UUID id, UUID projectId, ExecutionStatusEnum status) {
+    private ExecutionStatus(UUID id, Project project, ExecutionStatusEnum status) {
         this.id = id;
-        this.projectId = projectId;
+        this.project = project;
         this.status = status;
     }
 
-    public void addExecutionRequestFlowDetails(List<ExecutionRequestFlowDetails> executionRequestFlowDetails) {
+    private ExecutionStatus(UUID id, Project project, ExecutionStatusEnum status, Integer currentStep, List<WrapperExecutionProgress> steps) {
+        this.id = id;
+        this.project = project;
+        this.status = status;
+        this.currentStep = currentStep;
+        this.steps = steps;
+    }
+
+    public void setExecutionFlow(List<ExecutionRequestFlowDetails> executionRequestFlowDetails) {
         steps = executionRequestFlowDetails.stream()
                 .map(e -> new WrapperExecutionProgress(ExecutionStepState.NOT_EXECUTED, e))
                 .collect(Collectors.toList());
     }
 
-    public ExecutionRequestFlowDetails firstStep() {
+    public ExecutionRequestFlowDetails getFirstExecutionDetails() {
         if (currentStep != 0) {
             return null; // TODO add exception
         }
@@ -35,7 +43,11 @@ public class ExecutionStatus {
         return steps.get(currentStep).executionRequestFlowDetails;
     }
 
-    public ExecutionRequestFlowDetails nextStep() {
+    public UUID getProviderFromCurrentExecution() {
+        return steps.get(currentStep).executionRequestFlowDetails.getProviderId();
+    }
+
+    public ExecutionRequestFlowDetails getNextExecutionDetails() {
         if (currentStep < steps.size()) {
             WrapperExecutionProgress current = steps.get(currentStep);
 
@@ -46,27 +58,46 @@ public class ExecutionStatus {
             currentStep++;
             WrapperExecutionProgress next = steps.get(currentStep);
             return next.executionRequestFlowDetails;
+        } else {
+            // Logic when all steps are finished
         }
         return null;
     }
 
-    public static ExecutionStatus of(UUID id, UUID projectId, ExecutionStatusEnum status) {
-        return new ExecutionStatus(id, projectId, status);
+    public static ExecutionStatus of(UUID id, Project project, ExecutionStatusEnum status) {
+        return new ExecutionStatus(id, project, status);
     }
+
+    public static ExecutionStatus of(UUID id, Project project, ExecutionStatusEnum status, Integer currentStep, List<?> steps) {
+        return new ExecutionStatus(id, project, status, currentStep, (List<WrapperExecutionProgress>) steps);
+    }
+
 
     public UUID getId() {
         return id;
     }
 
-    public UUID getProjectId() {
-        return projectId;
+    public Project getProject() {
+        return project;
     }
 
     public ExecutionStatusEnum getStatus() {
         return status;
     }
 
-     class WrapperExecutionProgress {
+    public Integer getCurrentStep() {
+        return currentStep;
+    }
+
+    public List<WrapperExecutionProgress> getSteps() {
+        return new ArrayList<>(steps);
+    }
+
+    public void setCurrentExecutionState(ExecutionStepState state) {
+        steps.get(currentStep).state = state;
+    }
+
+    class WrapperExecutionProgress {
         private ExecutionStepState state;
         private ExecutionRequestFlowDetails executionRequestFlowDetails;
 
@@ -75,8 +106,23 @@ public class ExecutionStatus {
             this.executionRequestFlowDetails = executionRequestFlowDetails;
         }
 
-        private void setState(ExecutionStepState state) {
-            this.state = state;
+        @Override
+        public String toString() {
+            return "WrapperExecutionProgress{" +
+                    "state=" + state +
+                    ", executionRequestFlowDetails=" + executionRequestFlowDetails +
+                    '}';
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ExecutionStatus{" +
+                "id=" + id +
+                ", project=" + project +
+                ", status=" + status +
+                ", currentStep=" + currentStep +
+                ", steps=" + steps +
+                '}';
     }
 }

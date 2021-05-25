@@ -34,5 +34,10 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         return Optional.empty();
     }
 
+    @Override
+    public Boolean projectExists(UUID projectId) {
+        return fakeDatabase.PROJECTS.containsKey(projectId);
+    }
+
 
 }
