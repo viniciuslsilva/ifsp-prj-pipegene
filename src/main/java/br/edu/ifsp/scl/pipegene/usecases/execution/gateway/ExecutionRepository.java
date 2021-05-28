@@ -1,6 +1,6 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution.gateway;
 
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStatus;
+import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 
 import java.util.List;
@@ -12,11 +12,11 @@ public interface ExecutionRepository {
 
     Boolean bathProviderInfoIsValid(List<Provider> providers);
 
-    Optional<ExecutionStatus> findExecutionStatusByProjectIdAndExecutionId(UUID projectId, UUID executionId);
+    Optional<Execution> findExecutionByProjectIdAndExecutionId(UUID projectId, UUID executionId);
 
-    Optional<ExecutionStatus> findExecutionStatusByExecutionId(UUID executionId);
+    Optional<Execution> findExecutionByExecutionId(UUID executionId);
 
-    void saveExecutionStatus(ExecutionStatus executionStatus);
+    void saveExecution(Execution execution);
 
-    void updateExecutionStatus(ExecutionStatus executionStatus);
+    void updateExecution(Execution execution);
 }

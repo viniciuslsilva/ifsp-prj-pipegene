@@ -1,6 +1,6 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution;
 
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStatus;
+import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
@@ -35,6 +35,11 @@ public class ExecutionServiceImpl implements ExecutionService {
         if (optionalProject.isEmpty()) {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
+        Project project = optionalProject.get();
+
+        if (!project.hasDataset(executionRequest.getDataset())) {
+            throw new ResourceNotFoundException("Not found dataset: " + executionRequest.getDataset());
+        }
 
         Boolean executionRequestIsValid = executionRepository.bathProviderInfoIsValid(
                 executionRequest.getExecutionRequestFlowDetails().stream()
@@ -47,8 +52,8 @@ public class ExecutionServiceImpl implements ExecutionService {
         }
 
         UUID processId = queueService.add(executionRequest);
-        executionRepository.saveExecutionStatus(
-                ExecutionStatus.of(processId, optionalProject.get(), ExecutionStatusEnum.WAITING)
+        executionRepository.saveExecution(
+                Execution.of(processId, project, executionRequest.getDataset(), ExecutionStatusEnum.WAITING)
         );
 
         return processId;
@@ -61,7 +66,7 @@ public class ExecutionServiceImpl implements ExecutionService {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
-        Optional<ExecutionStatus> opt = executionRepository.findExecutionStatusByProjectIdAndExecutionId(projectId, executionId);
+        Optional<Execution> opt = executionRepository.findExecutionByProjectIdAndExecutionId(projectId, executionId);
 
         if (opt.isEmpty()) {
             throw new ResourceNotFoundException("Not found execution with id: " + executionId);

@@ -1,10 +1,15 @@
 package br.edu.ifsp.scl.pipegene.usecases.provider.client;
 
-import br.edu.ifsp.scl.pipegene.domain.Provider;
+import br.edu.ifsp.scl.pipegene.usecases.provider.model.ProviderResponse;
+import org.springframework.core.io.Resource;
 
+import java.io.File;
+import java.net.URI;
 import java.util.UUID;
 
 public interface ProviderClient {
 
-    void postFile(UUID operationId, Provider provider, String datasetUrl);
+    ProviderResponse postFile(UUID operationId, URI uri, File file);
+
+    Resource getFile(URI uri);
 }

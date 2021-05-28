@@ -5,6 +5,7 @@ import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProjectEntity;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,8 +19,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public Project saveNewProject(String name, String datasetUrl) {
-        ProjectEntity entity = ProjectEntity.of(UUID.randomUUID(), datasetUrl, name);
+    public Project saveNewProject(String name, String description, List<String> datasets) {
+        ProjectEntity entity = ProjectEntity.of(UUID.randomUUID(), datasets, name, description);
         fakeDatabase.PROJECTS.put(entity.getId(), entity);
 
         return entity.toProject();

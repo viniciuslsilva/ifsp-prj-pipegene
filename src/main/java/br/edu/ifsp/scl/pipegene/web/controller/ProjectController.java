@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -18,8 +19,11 @@ public class ProjectController {
     }
 
     @PostMapping("v1/projects")
-    public ResponseEntity<Project> createNewProject(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
-        Project project = projectService.createNewProject(name, file);
+    public ResponseEntity<Project> createNewProject(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("files") List<MultipartFile> files) {
+        Project project = projectService.createNewProject(name, description, files);
         return ResponseEntity.ok(project);
     }
 

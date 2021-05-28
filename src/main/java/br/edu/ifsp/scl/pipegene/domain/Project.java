@@ -1,34 +1,44 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Project {
 
     private UUID id;
-    private String datasetUrl;
+    private List<String> datasets;
     private String name;
+    private String description;
 
-    private Project(UUID id, String datasetUrl, String name) {
-        this.id = id;
-        this.datasetUrl = datasetUrl;
-        this.name = name;
+    public boolean hasDataset(String dataset) {
+        return datasets.contains(dataset);
     }
 
-    public static Project of(UUID id, String datasetUrl, String name) {
-        return new Project(id, datasetUrl, name);
+    private Project(UUID id, List<String> datasets, String name, String description) {
+        this.id = id;
+        this.datasets = datasets;
+        this.name = name;
+        this.description = description;
+    }
+
+    public static Project of(UUID id, List<String> datasetUrl, String name, String description) {
+        return new Project(id, datasetUrl, name, description);
     }
 
     public UUID getId() {
         return id;
     }
 
-    public String getDatasetUrl() {
-        return datasetUrl;
+    public List<String> getDatasets() {
+        return new ArrayList<>(datasets);
     }
 
     public String getName() {
         return name;
     }
 
-
+    public String getDescription() {
+        return description;
+    }
 }

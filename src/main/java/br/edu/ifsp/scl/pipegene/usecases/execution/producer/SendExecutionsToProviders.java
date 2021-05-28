@@ -1,4 +1,4 @@
-package br.edu.ifsp.scl.pipegene.usecases.producer;
+package br.edu.ifsp.scl.pipegene.usecases.execution.producer;
 
 import br.edu.ifsp.scl.pipegene.configuration.properties.model.ExecutionProperties;
 import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionTransaction;
@@ -6,16 +6,12 @@ import br.edu.ifsp.scl.pipegene.usecases.execution.queue.ExecutionQueueElement;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.QueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 
 @Component
-@EnableAsync
 public class SendExecutionsToProviders {
 
     private final Logger logger = LoggerFactory.getLogger(SendExecutionsToProviders.class);
@@ -30,9 +26,6 @@ public class SendExecutionsToProviders {
         this.executionTransaction = executionTransaction;
     }
 
-
-    @Async
-    @Scheduled(cron = "${cron.expression}")
     public void send() {
         logger.info("Starting to send executions async - " + System.currentTimeMillis() / 1000);
 

@@ -1,15 +1,16 @@
 package br.edu.ifsp.scl.pipegene.external.persistence.entities;
 
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStatus;
+import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 
 import java.util.List;
 import java.util.UUID;
 
-public class ExecutionStatusEntity {
+public class ExecutionEntity {
     private UUID id;
     private UUID projectId;
+    private String dataset;
     private String status;
 
     private Integer currentStep;
@@ -17,26 +18,28 @@ public class ExecutionStatusEntity {
 
     // TODO("Add attributes created_at and limit_date")
 
-    private ExecutionStatusEntity(UUID id, UUID projectId, String status, Integer currentStep, List<?> steps) {
+    private ExecutionEntity(UUID id, UUID projectId, String dataset, String status, Integer currentStep, List<?> steps) {
         this.id = id;
         this.projectId = projectId;
+        this.dataset = dataset;
         this.status = status;
         this.currentStep = currentStep;
         this.steps = steps;
     }
 
-    public static ExecutionStatusEntity of(ExecutionStatus executionStatus) {
-        return new ExecutionStatusEntity(
-                executionStatus.getId(),
-                executionStatus.getProject().getId(),
-                executionStatus.getStatus().name(),
-                executionStatus.getCurrentStep(),
-                executionStatus.getSteps()
+    public static ExecutionEntity of(Execution execution) {
+        return new ExecutionEntity(
+                execution.getId(),
+                execution.getProject().getId(),
+                execution.getDataset(),
+                execution.getStatus().name(),
+                execution.getCurrentStep(),
+                execution.getSteps()
         );
     }
 
-    public ExecutionStatus toExecutionStatus(Project project) {
-        return ExecutionStatus.of(id, project, ExecutionStatusEnum.valueOf(status), currentStep, steps);
+    public Execution toExecutionStatus(Project project) {
+        return Execution.of(id, project, dataset, ExecutionStatusEnum.valueOf(status), currentStep, steps);
     }
 
     public UUID getId() {

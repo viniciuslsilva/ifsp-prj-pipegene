@@ -7,8 +7,11 @@ import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -22,9 +25,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Project createNewProject(String name, MultipartFile file) {
-        String datasetUrl = objectStorageService.putObject(file);
-        return projectRepository.saveNewProject(name, datasetUrl);
+    public Project createNewProject(String name, String description, List<MultipartFile> files) {
+        List<String> datasets = files.stream().map(objectStorageService::putObject).collect(Collectors.toList());
+
+        return projectRepository.saveNewProject(name, description, datasets);
     }
 
     @Override

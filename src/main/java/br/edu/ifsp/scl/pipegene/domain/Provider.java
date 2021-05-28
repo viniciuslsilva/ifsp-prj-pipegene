@@ -49,4 +49,8 @@ public class Provider {
     public URI getURI() {
         return URI.create("http://localhost:5000/v1/process");
     }
+
+    public URI buildDownloadURI(String filename) {
+        return URI.create("http://localhost:5000/v1/uploads/"+filename);
+    }
 }

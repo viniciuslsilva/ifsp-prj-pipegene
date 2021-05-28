@@ -1,6 +1,6 @@
 package br.edu.ifsp.scl.pipegene.external.persistence;
 
-import br.edu.ifsp.scl.pipegene.external.persistence.entities.ExecutionStatusEntity;
+import br.edu.ifsp.scl.pipegene.external.persistence.entities.ExecutionEntity;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProjectEntity;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProviderEntity;
 import org.springframework.stereotype.Component;
@@ -17,19 +17,21 @@ import java.util.stream.Stream;
 public final class FakeDatabase {
     public final Map<UUID, ProjectEntity> PROJECTS;
     public final Map<UUID, ProviderEntity> PROVIDERS;
-    public final Map<UUID, ExecutionStatusEntity> EXECUTION_STATUS_MAP = new HashMap<>();
+    public final Map<UUID, ExecutionEntity> EXECUTION_STATUS_MAP = new HashMap<>();
 
     public FakeDatabase() {
         PROJECTS = Stream.of(
                 ProjectEntity.of(
                         UUID.fromString("53bb719a-e982-4785-bb53-40dc71d6dd9a"),
-                        "e6524f24-1ef8-4cc9-8538-31db80941b7b_GBM_MEMo.maf",
-                        "Fake Project"
+                        Collections.singletonList("mock_GBM_MEMo.maf"),
+                        "Fake Project",
+                        "description Fake Project"
                 ),
                 ProjectEntity.of(
                         UUID.fromString("e1d33cc3-f04d-45c8-8998-20cd0d4af878"),
-                        "e6524f24-1ef8-4cc9-8538-31db80941b7b_GBM_MEMo.maf",
-                        "Fake Project 2"
+                        Collections.singletonList("mock_GBM_MEMo.maf"),
+                        "Fake Project 2",
+                        "descripiton Fake Project 2"
                 )
 
         ).collect(Collectors.toMap(ProjectEntity::getId, Function.identity()));
