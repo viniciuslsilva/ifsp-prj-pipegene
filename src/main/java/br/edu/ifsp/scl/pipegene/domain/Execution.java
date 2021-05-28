@@ -23,11 +23,11 @@ public class Execution {
     }
 
     public ExecutionRequestFlowDetails getFirstExecutionDetails() {
-        if (currentStep != 0) {
+        if (currentStep > 0) {
             return null; // TODO add exception
         }
         status = ExecutionStatusEnum.IN_PROGRESS;
-        return steps.get(currentStep).executionRequestFlowDetails;
+        return steps.get(0).executionRequestFlowDetails;
     }
 
     public UUID getProviderFromCurrentExecution() {
@@ -35,12 +35,11 @@ public class Execution {
     }
 
     public boolean hasNextExecution() {
-        return currentStep == steps.size();
+        return currentStep < steps.size() - 1;
     }
 
-
     public ExecutionRequestFlowDetails getNextExecutionDetails() {
-        if (currentStep < steps.size()) {
+        if (hasNextExecution()) {
             WrapperExecutionProgress current = steps.get(currentStep);
 
             if (!current.state.equals(ExecutionStepState.SUCCESS)) {
