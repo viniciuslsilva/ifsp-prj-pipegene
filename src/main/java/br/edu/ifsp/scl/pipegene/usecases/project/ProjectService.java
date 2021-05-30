@@ -11,4 +11,5 @@ public interface ProjectService {
     Project createNewProject(String name, String description, List<MultipartFile> files);
 
     Project findProjectById(UUID projectId);
+    List<Project> findAllProjects();
 }

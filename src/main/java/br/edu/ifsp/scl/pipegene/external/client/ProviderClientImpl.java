@@ -1,8 +1,7 @@
-package br.edu.ifsp.scl.pipegene.usecases.provider.client;
+package br.edu.ifsp.scl.pipegene.external.client;
 
-import br.edu.ifsp.scl.pipegene.domain.Provider;
-import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
-import br.edu.ifsp.scl.pipegene.usecases.provider.model.ProviderResponse;
+import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderClient;
+import br.edu.ifsp.scl.pipegene.external.client.model.ProviderResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,10 +33,11 @@ public class ProviderClientImpl implements ProviderClient {
     }
 
     @Override
-    public ProviderResponse postFile(UUID operationId, URI uri, File file) {
+    public ProviderResponse processRequest(UUID executionId, UUID stepId, String url, File file) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.add("x-pipegene-operation-id", operationId.toString());
+        headers.add("x-pipegene-execution-id", executionId.toString());
+        headers.add("x-pipegene-step-id", stepId.toString());
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource(file));
@@ -46,6 +46,7 @@ public class ProviderClientImpl implements ProviderClient {
 
         try {
             logger.info("POST request for " + request.toString());
+            URI uri = URI.create(url + "/v1/pipegine/provider/process");
             ProviderResponse r = restTemplate.postForObject(uri, request, ProviderResponse.class);
             logger.info("Response: " + r);
             return r;
@@ -56,9 +57,7 @@ public class ProviderClientImpl implements ProviderClient {
     }
 
     @Override
-    public Resource getFile(URI uri) {
+    public Resource retrieveProcessedFileRequest(URI uri) {
         return restTemplate.getForObject(uri, ByteArrayResource.class);
     }
-
-
 }

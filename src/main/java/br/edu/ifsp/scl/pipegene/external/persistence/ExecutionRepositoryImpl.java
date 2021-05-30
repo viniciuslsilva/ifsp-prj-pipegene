@@ -1,6 +1,7 @@
 package br.edu.ifsp.scl.pipegene.external.persistence;
 
 import br.edu.ifsp.scl.pipegene.domain.Execution;
+import br.edu.ifsp.scl.pipegene.domain.ExecutionStep;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ExecutionEntity;
@@ -64,5 +65,17 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
         fakeDatabase.EXECUTION_STATUS_MAP.replace(entity.getId(), entity);
     }
 
+    @Override
+    public Optional<Execution> findExecutionByExecutionIdAndCurrentExecutionStepId(UUID executionId, UUID stepId) {
+        if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
+            ExecutionEntity entity = fakeDatabase.EXECUTION_STATUS_MAP.get(executionId);
+            Project project = projectRepository.findProjectById(entity.getProjectId()).orElseThrow();
+            Execution execution = entity.toExecutionStatus(project);
 
+            if (execution.getStepIdFromCurrentExecutionStep().equals(stepId)) {
+                return Optional.of(execution);
+            }
+        }
+        return Optional.empty();
+    }
 }

@@ -1,11 +1,9 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequestFlowDetails;
-
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class Execution {
     private UUID id;
@@ -13,55 +11,59 @@ public class Execution {
     private String dataset;
     private ExecutionStatusEnum status;
 
-    private Integer currentStep = 0;
-    private List<WrapperExecutionProgress> steps = new ArrayList<>();
+    private URI executionResult;
 
-    public void setExecutionFlow(List<ExecutionRequestFlowDetails> executionRequestFlowDetails) {
-        steps = executionRequestFlowDetails.stream()
-                .map(e -> new WrapperExecutionProgress(ExecutionStepState.NOT_EXECUTED, e))
-                .collect(Collectors.toList());
+    private Integer currentStep = 0;
+    private List<ExecutionStep> steps = new ArrayList<>();
+
+    public void setExecutionSteps(List<ExecutionStep> steps) {
+        this.steps = steps;
     }
 
-    public ExecutionRequestFlowDetails getFirstExecutionDetails() {
+    public ExecutionStep getFirstExecutionStep() {
         if (currentStep > 0) {
             return null; // TODO add exception
         }
         status = ExecutionStatusEnum.IN_PROGRESS;
-        return steps.get(0).executionRequestFlowDetails;
+        return steps.get(0);
     }
 
-    public UUID getProviderFromCurrentExecution() {
-        return steps.get(currentStep).executionRequestFlowDetails.getProviderId();
+    public UUID getProviderIdFromCurrentExecutionStep() {
+        return steps.get(currentStep).getProviderId();
+    }
+
+    public UUID getStepIdFromCurrentExecutionStep() {
+        return steps.get(currentStep).getStepId();
     }
 
     public boolean hasNextExecution() {
         return currentStep < steps.size() - 1;
     }
 
-    public ExecutionRequestFlowDetails getNextExecutionDetails() {
+    public ExecutionStep getNextExecutionStep() {
         if (hasNextExecution()) {
-            WrapperExecutionProgress current = steps.get(currentStep);
+            ExecutionStep current = steps.get(currentStep);
 
-            if (!current.state.equals(ExecutionStepState.SUCCESS)) {
+            if (!current.getState().equals(ExecutionStepState.SUCCESS)) {
                 return null; // TODO add exception
             }
 
             currentStep++;
-            WrapperExecutionProgress next = steps.get(currentStep);
-            return next.executionRequestFlowDetails;
+            return steps.get(currentStep);
         }
         return null;
     }
 
-    public void finishExecution() {
+    public void finishExecution(URI executionResult) {
         if (hasNextExecution()) {
             throw new IllegalStateException();
         }
         status = ExecutionStatusEnum.DONE;
+        this.executionResult = executionResult;
     }
 
-    public void setCurrentExecutionState(ExecutionStepState state) {
-        steps.get(currentStep).state = state;
+    public void setCurrentExecutionStepState(ExecutionStepState state) {
+        steps.get(currentStep).setState(state);
     }
 
     private Execution(UUID id, Project project, String dataset, ExecutionStatusEnum status) {
@@ -71,7 +73,7 @@ public class Execution {
         this.status = status;
     }
 
-    private Execution(UUID id, Project project, String dataset, ExecutionStatusEnum status, Integer currentStep, List<WrapperExecutionProgress> steps) {
+    private Execution(UUID id, Project project, String dataset, ExecutionStatusEnum status, Integer currentStep, List<ExecutionStep> steps) {
         this.id = id;
         this.project = project;
         this.dataset = dataset;
@@ -85,8 +87,8 @@ public class Execution {
         return new Execution(id, project, dataset, status);
     }
 
-    public static Execution of(UUID id, Project project, String dataset, ExecutionStatusEnum status, Integer currentStep, List<?> steps) {
-        return new Execution(id, project, dataset, status, currentStep, (List<WrapperExecutionProgress>) steps);
+    public static Execution of(UUID id, Project project, String dataset, ExecutionStatusEnum status, Integer currentStep, List<ExecutionStep> steps) {
+        return new Execution(id, project, dataset, status, currentStep, steps);
     }
 
     public UUID getId() {
@@ -105,7 +107,7 @@ public class Execution {
         return currentStep;
     }
 
-    public List<WrapperExecutionProgress> getSteps() {
+    public List<ExecutionStep> getSteps() {
         return new ArrayList<>(steps);
     }
 
@@ -113,32 +115,7 @@ public class Execution {
         return dataset;
     }
 
-    class WrapperExecutionProgress {
-        private ExecutionStepState state;
-        private ExecutionRequestFlowDetails executionRequestFlowDetails;
-
-        public WrapperExecutionProgress(ExecutionStepState state, ExecutionRequestFlowDetails executionRequestFlowDetails) {
-            this.state = state;
-            this.executionRequestFlowDetails = executionRequestFlowDetails;
-        }
-
-        @Override
-        public String toString() {
-            return "WrapperExecutionProgress{" +
-                    "state=" + state +
-                    ", executionRequestFlowDetails=" + executionRequestFlowDetails +
-                    '}';
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "ExecutionStatus{" +
-                "id=" + id +
-                ", project=" + project +
-                ", status=" + status +
-                ", currentStep=" + currentStep +
-                ", steps=" + steps +
-                '}';
+    public URI getExecutionResult() {
+        return executionResult;
     }
 }

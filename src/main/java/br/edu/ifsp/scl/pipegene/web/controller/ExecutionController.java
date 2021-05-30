@@ -1,10 +1,10 @@
 package br.edu.ifsp.scl.pipegene.web.controller;
 
+import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionService;
 import br.edu.ifsp.scl.pipegene.usecases.execution.producer.SendExecutionsToProviders;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
 import br.edu.ifsp.scl.pipegene.web.model.execution.response.ExecutionResponse;
-import br.edu.ifsp.scl.pipegene.web.model.execution.response.ProjectExecutionStatusResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -30,26 +30,21 @@ public class ExecutionController {
     public ResponseEntity<ExecutionResponse> addNewExecution(
             @PathVariable UUID projectId,
             @RequestBody @Valid ExecutionRequest executionRequest) {
-        UUID processId = executionService.addNewExecution(projectId, executionRequest);
+        UUID executionId = executionService.addNewExecution(projectId, executionRequest);
 
         ExecutionResponse response = ExecutionResponse.builder()
-                .processId(processId)
+                .executionId(executionId)
                 .build();
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("v1/projects/{projectId}/executions/{executionId}")
-    public ResponseEntity<?> checkProjectExecutionStatus(
+    public ResponseEntity<?> findExecutionById(
             @PathVariable UUID projectId,
             @PathVariable UUID executionId
     ) {
-        String status = executionService.checkProjectExecutionStatus(projectId, executionId);
-
-        ProjectExecutionStatusResponse response = ProjectExecutionStatusResponse.builder()
-                .id(UUID.randomUUID())
-                .status(status)
-                .build();
+        Execution response = executionService.findExecutionById(projectId, executionId);
 
         return ResponseEntity.ok(response);
     }

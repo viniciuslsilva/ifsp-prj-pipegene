@@ -21,6 +21,7 @@ public class DebugController {
 
     @GetMapping("/debug")
     public ResponseEntity<?> getState() {
+
         Map<String, Object> map = new HashMap<>();
         map.put("projects", fakeDatabase.PROJECTS);
         map.put("providers", fakeDatabase.PROVIDERS);
@@ -29,4 +30,6 @@ public class DebugController {
 
         return ResponseEntity.ok(map);
     }
+
+
 }

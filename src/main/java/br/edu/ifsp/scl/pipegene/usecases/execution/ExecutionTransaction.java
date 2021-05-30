@@ -9,5 +9,7 @@ public interface ExecutionTransaction {
 
     void start(ExecutionQueueElement executionQueueElement);
 
-    void processExecutionResult(UUID providerId, UUID operationId, ProviderExecutionResultRequest providerExecutionResultRequest);
+    void validateNotificationFromProvider(UUID providerId, UUID executionId, UUID stepId);
+
+    void processAsyncExecutionResult(UUID providerId, UUID executionId, UUID stepId, ProviderExecutionResultRequest providerExecutionResultRequest);
 }

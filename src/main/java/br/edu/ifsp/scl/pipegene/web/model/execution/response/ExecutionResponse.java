@@ -4,52 +4,35 @@ import java.util.UUID;
 
 public class ExecutionResponse {
 
-    private UUID requestId;
-    private UUID processId;
+    private UUID executionId;
 
-    public UUID getRequestId() {
-        return requestId;
+    public UUID getExecutionId() {
+        return executionId;
     }
 
-    public void setRequestId(UUID requestId) {
-        this.requestId = requestId;
-    }
-
-    public UUID getProcessId() {
-        return processId;
-    }
-
-    public void setProcessId(UUID processId) {
-        this.processId = processId;
+    public void setExecutionId(UUID executionId) {
+        this.executionId = executionId;
     }
 
     public interface Builder {
-        Builder requestId(UUID id);
-        Builder processId(UUID id);
+        Builder executionId(UUID id);
         ExecutionResponse build();
     }
 
     private ExecutionResponse(BuilderImpl builder) {
-        this.requestId = builder.requestId;
-        this.processId = builder.processId;
+        this.executionId = builder.executionId;
     }
 
     static final class BuilderImpl implements Builder {
 
-        private UUID requestId;
-        private UUID processId;
+        private UUID executionId;
 
         private BuilderImpl() { }
 
-        @Override
-        public Builder requestId(UUID id) {
-            this.requestId = id;
-            return this;
-        }
 
         @Override
-        public Builder processId(UUID id) {
-            this.processId = id;
+        public Builder executionId(UUID id) {
+            this.executionId = id;
             return this;
         }
 

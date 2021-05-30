@@ -1,17 +1,19 @@
 package br.edu.ifsp.scl.pipegene.web.model.provider;
 
+import java.net.URI;
+
 public class ProviderExecutionResultRequest {
 
     private ProviderExecutionResultStatus status;
-    private String filename;
-    // TODO Add error fields
 
+    private URI uri;
+    // TODO Add error fields
 
     public ProviderExecutionResultStatus getStatus() {
         return status;
     }
 
-    public String getFilename() {
-        return filename;
+    public URI getUri() {
+        return uri;
     }
 }

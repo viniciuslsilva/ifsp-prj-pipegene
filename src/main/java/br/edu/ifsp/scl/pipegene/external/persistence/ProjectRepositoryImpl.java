@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 public class ProjectRepositoryImpl implements ProjectRepository {
@@ -40,5 +41,10 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         return fakeDatabase.PROJECTS.containsKey(projectId);
     }
 
-
+    @Override
+    public List<Project> findAllProjects() {
+        return fakeDatabase.PROJECTS.values().stream()
+                .map(ProjectEntity::toProject)
+                .collect(Collectors.toList());
+    }
 }

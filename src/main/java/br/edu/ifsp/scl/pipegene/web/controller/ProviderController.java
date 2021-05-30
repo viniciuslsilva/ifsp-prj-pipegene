@@ -1,33 +1,51 @@
 package br.edu.ifsp.scl.pipegene.web.controller;
 
+import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionTransaction;
+import br.edu.ifsp.scl.pipegene.usecases.provider.ProviderService;
 import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderExecutionResultRequest;
+import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 public class ProviderController {
 
     private final ExecutionTransaction executionTransaction;
+    private final ProviderService providerService;
 
-    public ProviderController(ExecutionTransaction executionTransaction) {
+    public ProviderController(ExecutionTransaction executionTransaction, ProviderService providerService) {
         this.executionTransaction = executionTransaction;
+        this.providerService = providerService;
     }
 
-    @PostMapping("v1/providers/{providerId}/operations/{operationId}")
+    @PostMapping("v1/providers")
+    public ResponseEntity<?> addNewProvider(@RequestBody @Valid ProviderRequest providerRequest) {
+        Provider provider = providerService.createNewProject(providerRequest);
+        return ResponseEntity.ok(provider);
+    }
+
+    @GetMapping("v1/providers")
+    public ResponseEntity<?> listAllProviders() {
+        List<Provider> providers = providerService.listAllProviders();
+        return ResponseEntity.ok(providers);
+    }
+
+    @PostMapping("v1/providers/{providerId}/executions/{executionId}/steps/{stepId}")
     public ResponseEntity<?> notifyExecutionResult(
             @PathVariable UUID providerId,
-            @PathVariable UUID operationId,
+            @PathVariable UUID executionId,
+            @PathVariable UUID stepId,
             @RequestBody ProviderExecutionResultRequest providerExecutionResultRequest
     ) {
 
-        executionTransaction.processExecutionResult(providerId, operationId, providerExecutionResultRequest);
+        executionTransaction.validateNotificationFromProvider(providerId, executionId, stepId);
+        executionTransaction.processAsyncExecutionResult(providerId, executionId, stepId, providerExecutionResultRequest);
 
-        return  ResponseEntity.ok("");
+        return ResponseEntity.accepted().build();
     }
 }

@@ -10,6 +10,7 @@ import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
 import br.edu.ifsp.scl.pipegene.web.exception.GenericResourceException;
 import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
+import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionStepRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -42,8 +43,8 @@ public class ExecutionServiceImpl implements ExecutionService {
         }
 
         Boolean executionRequestIsValid = executionRepository.bathProviderInfoIsValid(
-                executionRequest.getExecutionRequestFlowDetails().stream()
-                        .map(Provider::fromExecutionRequestFlowDetails)
+                executionRequest.getExecutionSteps().stream()
+                        .map(this::mapToProvider)
                         .collect(Collectors.toList())
         );
 
@@ -51,16 +52,20 @@ public class ExecutionServiceImpl implements ExecutionService {
             throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Execution Request");
         }
 
-        UUID processId = queueService.add(executionRequest);
+        UUID executionId = queueService.add(executionRequest);
         executionRepository.saveExecution(
-                Execution.of(processId, project, executionRequest.getDataset(), ExecutionStatusEnum.WAITING)
+                Execution.of(executionId, project, executionRequest.getDataset(), ExecutionStatusEnum.WAITING)
         );
 
-        return processId;
+        return executionId;
+    }
+
+    private Provider mapToProvider(ExecutionStepRequest e) {
+        return Provider.of(e.getProviderId(), e.getInputType(), e.getOutputType());
     }
 
     @Override
-    public String checkProjectExecutionStatus(UUID projectId, UUID executionId) {
+    public Execution findExecutionById(UUID projectId, UUID executionId) {
         Boolean projectExists = projectRepository.projectExists(projectId);
         if (!projectExists) {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
@@ -72,7 +77,7 @@ public class ExecutionServiceImpl implements ExecutionService {
             throw new ResourceNotFoundException("Not found execution with id: " + executionId);
         }
 
-        return opt.get().getStatus().name();
+        return opt.get();
     }
 
 

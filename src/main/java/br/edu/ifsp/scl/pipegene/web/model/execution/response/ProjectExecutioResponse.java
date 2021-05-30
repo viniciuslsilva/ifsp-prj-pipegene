@@ -3,7 +3,7 @@ package br.edu.ifsp.scl.pipegene.web.model.execution.response;
 
 import java.util.UUID;
 
-public class ProjectExecutionStatusResponse {
+public class ProjectExecutioResponse {
 
     private UUID requestId;
     private String status;
@@ -27,10 +27,10 @@ public class ProjectExecutionStatusResponse {
     public interface Builder {
         Builder id(UUID id);
         Builder status(String id);
-        ProjectExecutionStatusResponse build();
+        ProjectExecutioResponse build();
     }
 
-    private ProjectExecutionStatusResponse(BuilderImpl builder) {
+    private ProjectExecutioResponse(BuilderImpl builder) {
         this.requestId = builder.id;
         this.status = builder.status;
     }
@@ -55,8 +55,8 @@ public class ProjectExecutionStatusResponse {
         }
 
         @Override
-        public ProjectExecutionStatusResponse build() {
-            return new ProjectExecutionStatusResponse(this);
+        public ProjectExecutioResponse build() {
+            return new ProjectExecutioResponse(this);
         }
     }
 

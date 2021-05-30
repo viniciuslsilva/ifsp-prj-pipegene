@@ -1,4 +1,4 @@
-package br.edu.ifsp.scl.pipegene.usecases.provider.model;
+package br.edu.ifsp.scl.pipegene.external.client.model;
 
 public class ProviderResponse {
     private String urlToCheck;

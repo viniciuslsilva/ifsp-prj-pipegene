@@ -6,23 +6,33 @@ import java.util.*;
 
 public class ProviderEntity {
     private UUID id;
+    private String name;
+    private String description;
+    private String url;
     private Set<String> inputSupportedTypes;
     private Set<String> outputSupportedTypes;
-    private String name;
-    private String providerUrl;
 
-    private ProviderEntity(UUID id, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
+
+    private ProviderEntity(UUID id, String name, String description, String url, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
         this.id = id;
+        this.name = name;
+        this.description = description;
+        this.url = url;
         this.inputSupportedTypes = new HashSet<>(inputSupportedTypes);
         this.outputSupportedTypes = new HashSet<>(outputSupportedTypes);
     }
 
-    public static ProviderEntity of(UUID id, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
-        return new ProviderEntity(id, inputSupportedTypes, outputSupportedTypes);
+    public static ProviderEntity of(UUID id, String name, String description, String url, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
+        return new ProviderEntity(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
+    }
+
+    public static ProviderEntity of(Provider provider) {
+        return new ProviderEntity(provider.getId(), provider.getName(), provider.getDescription(), provider.getUrl(),
+                provider.getInputSupportedTypes(), provider.getOutputSupportedTypes());
     }
 
     public Provider toProvider() {
-        return Provider.of(id, inputSupportedTypes, outputSupportedTypes);
+        return Provider.of(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
     }
 
     public UUID getId() {
@@ -57,11 +67,19 @@ public class ProviderEntity {
         this.name = name;
     }
 
-    public String getProviderUrl() {
-        return providerUrl;
+    public String getDescription() {
+        return description;
     }
 
-    public void setProviderUrl(String providerUrl) {
-        this.providerUrl = providerUrl;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

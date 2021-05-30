@@ -12,5 +12,7 @@ public interface ProjectRepository {
 
     Optional<Project> findProjectById(UUID id);
 
+    List<Project> findAllProjects();
+
     Boolean projectExists(UUID id);
 }

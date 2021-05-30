@@ -1,8 +1,5 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequestFlowDetails;
-
-import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -10,6 +7,9 @@ import java.util.UUID;
 public class Provider {
 
     private UUID id;
+    private String name;
+    private String description;
+    private String url;
     private Set<String> inputSupportedTypes;
     private Set<String> outputSupportedTypes;
 
@@ -19,22 +19,21 @@ public class Provider {
         this.outputSupportedTypes = Set.of(outputSupportedType);
     }
 
-    private Provider(UUID id, Set<String> inputSupportedType, Set<String> outputSupportedType) {
+    public Provider(UUID id, String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
         this.id = id;
-        this.inputSupportedTypes = new HashSet<>(inputSupportedType);
-        this.outputSupportedTypes = new HashSet<>(outputSupportedType);
+        this.name = name;
+        this.description = description;
+        this.url = url;
+        this.inputSupportedTypes = new HashSet<>(inputSupportedTypes);
+        this.outputSupportedTypes = new HashSet<>(outputSupportedTypes);
     }
 
-    public static Provider of(UUID id, Set<String> inputSupportedType, Set<String> outputSupportedType) {
+    public static Provider of(UUID id, String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
+        return new Provider(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
+    }
+
+    public static Provider of(UUID id, String inputSupportedType, String outputSupportedType) {
         return new Provider(id, inputSupportedType, outputSupportedType);
-    }
-
-    public static Provider fromExecutionRequestFlowDetails(ExecutionRequestFlowDetails e) {
-        return new Provider(e.getProviderId(), e.getInputType(), e.getOutputType());
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     public boolean isInputSupportedType(String inputType) {
@@ -45,12 +44,31 @@ public class Provider {
         return outputSupportedTypes.contains(outputType);
     }
 
-
-    public URI getURI() {
-        return URI.create("http://localhost:5000/v1/process");
+    public UUID getId() {
+        return id;
     }
 
-    public URI buildDownloadURI(String filename) {
-        return URI.create("http://localhost:5000/v1/uploads/"+filename);
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Set<String> getInputSupportedTypes() {
+        return new HashSet<>(inputSupportedTypes);
+    }
+
+    public Set<String> getOutputSupportedTypes() {
+        return new HashSet<>(outputSupportedTypes);
     }
 }

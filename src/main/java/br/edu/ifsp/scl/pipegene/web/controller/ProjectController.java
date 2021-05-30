@@ -27,11 +27,15 @@ public class ProjectController {
         return ResponseEntity.ok(project);
     }
 
+    @GetMapping("v1/projects/")
+    public ResponseEntity<?> listAllProjects() {
+        List<Project> projects = projectService.findAllProjects();
+        return ResponseEntity.ok(projects);
+    }
+
     @GetMapping("v1/projects/{projectId}")
     public ResponseEntity<Project> findProjectById(@PathVariable UUID projectId) {
         Project project = projectService.findProjectById(projectId);
         return ResponseEntity.ok(project);
     }
-
-
 }

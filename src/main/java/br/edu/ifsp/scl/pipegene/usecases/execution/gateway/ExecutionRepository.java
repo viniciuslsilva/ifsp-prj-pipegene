@@ -19,4 +19,6 @@ public interface ExecutionRepository {
     void saveExecution(Execution execution);
 
     void updateExecution(Execution execution);
+
+    Optional<Execution> findExecutionByExecutionIdAndCurrentExecutionStepId(UUID executionId, UUID stepId);
 }

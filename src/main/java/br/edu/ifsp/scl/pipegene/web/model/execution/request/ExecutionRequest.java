@@ -7,19 +7,19 @@ import java.util.List;
 public class ExecutionRequest {
 
     @NotNull
-    private List<ExecutionRequestFlowDetails> executionRequestFlowDetails;
+    private List<ExecutionStepRequest> executionSteps;
     @NotNull
     private String dataset;
 
     public ExecutionRequest() { }
 
-    public ExecutionRequest(List<ExecutionRequestFlowDetails> executionRequestFlowDetails, String dataset) {
-        this.executionRequestFlowDetails = executionRequestFlowDetails;
+    public ExecutionRequest(List<ExecutionStepRequest> executionSteps, String dataset) {
+        this.executionSteps = executionSteps;
         this.dataset = dataset;
     }
 
-    public List<ExecutionRequestFlowDetails> getExecutionRequestFlowDetails() {
-        return new ArrayList<>(executionRequestFlowDetails);
+    public List<ExecutionStepRequest> getExecutionSteps() {
+        return new ArrayList<>(executionSteps);
     }
 
     public String getDataset() {
@@ -29,7 +29,7 @@ public class ExecutionRequest {
     @Override
     public String toString() {
         return "ExecutionRequest{" +
-                "executionRequestFlowDetails=" + executionRequestFlowDetails +
+                "executionRequestFlowDetails=" + executionSteps +
                 '}';
     }
 }

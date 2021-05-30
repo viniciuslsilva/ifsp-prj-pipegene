@@ -1,20 +1,21 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution;
 
 import br.edu.ifsp.scl.pipegene.domain.Execution;
+import br.edu.ifsp.scl.pipegene.domain.ExecutionStep;
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStepState;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionRepository;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.ExecutionQueueElement;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
-import br.edu.ifsp.scl.pipegene.usecases.provider.client.ProviderClient;
+import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderClient;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderRepository;
-import br.edu.ifsp.scl.pipegene.usecases.provider.model.ProviderResponse;
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequestFlowDetails;
+import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionStepRequest;
 import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderExecutionResultRequest;
 import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderExecutionResultStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -22,8 +23,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ExecutionTransactionImpl implements ExecutionTransaction {
@@ -47,15 +50,17 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
                 .findExecutionByExecutionId(executionQueueElement.getId())
                 .orElseThrow();
 
-        execution.setExecutionFlow(executionQueueElement.getExecutionRequestFlowDetails());
+        List<ExecutionStep> steps = mapToExecutionStep(executionQueueElement.getExecutionStepRequests());
+        execution.setExecutionSteps(steps);
+
         logger.info(execution.toString());
 
-        ExecutionRequestFlowDetails firstExecutionDetails = execution.getFirstExecutionDetails();
+        ExecutionStep executionStep = execution.getFirstExecutionStep();
         Provider provider = providerRepository
-                .findProviderById(firstExecutionDetails.getProviderId())
+                .findProviderById(executionStep.getProviderId())
                 .orElseThrow();
 
-        validateExecutionDetailsWithProviderFound(provider, firstExecutionDetails);
+        validateExecutionDetailsWithProviderFound(provider, executionStep);
 
         File file = storageService.getObject(execution.getDataset());
 
@@ -66,46 +71,62 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
         executionRepository.updateExecution(execution);
     }
 
+    private List<ExecutionStep> mapToExecutionStep(List<ExecutionStepRequest> executionRequestFlowDetails) {
+        return executionRequestFlowDetails
+                .stream()
+                .map(e -> ExecutionStep.of(e.getProviderId(), e.getInputType(), e.getOutputType(), ExecutionStepState.NOT_EXECUTED))
+                .collect(Collectors.toList());
+    }
+
     @Override
-    public void processExecutionResult(UUID providerId, UUID operationId, ProviderExecutionResultRequest providerExecutionResultRequest) {
+    public void validateNotificationFromProvider(UUID providerId, UUID executionId, UUID stepId) {
         Execution execution = executionRepository
-                .findExecutionByExecutionId(operationId)
+                .findExecutionByExecutionIdAndCurrentExecutionStepId(executionId, stepId)
                 .orElseThrow();
 
-        if (!execution.getProviderFromCurrentExecution().equals(providerId)) {
+        if (!execution.getProviderIdFromCurrentExecutionStep().equals(providerId)) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @Async
+    @Override
+    public void processAsyncExecutionResult(UUID providerId, UUID executionId, UUID stepId, ProviderExecutionResultRequest providerExecutionResultRequest) {
+        Execution execution = executionRepository
+                .findExecutionByExecutionIdAndCurrentExecutionStepId(executionId, stepId)
+                .orElseThrow();
+
+        if (!execution.getProviderIdFromCurrentExecutionStep().equals(providerId)) {
             throw new IllegalArgumentException();
         }
 
         if (providerExecutionResultRequest.getStatus().equals(ProviderExecutionResultStatus.SUCCESS)) {
-            execution.setCurrentExecutionState(ExecutionStepState.SUCCESS);
-
-            Provider provider = providerRepository.findProviderById(providerId).orElseThrow();
-
+            execution.setCurrentExecutionStepState(ExecutionStepState.SUCCESS);
             if (execution.hasNextExecution()) {
-                applyNextExecution(execution, providerExecutionResultRequest, provider);
+                applyNextExecution(execution, providerExecutionResultRequest);
             } else {
-                execution.finishExecution();
+                execution.finishExecution(providerExecutionResultRequest.getUri());
                 executionRepository.updateExecution(execution);
             }
         }
     }
 
-    private void applyNextExecution(Execution execution, ProviderExecutionResultRequest providerExecutionResultRequest, Provider provider) {
-        ExecutionRequestFlowDetails nextExecutionDetails = execution.getNextExecutionDetails();
+    private void applyNextExecution(Execution execution, ProviderExecutionResultRequest providerExecutionResultRequest) {
+        ExecutionStep executionStep = execution.getNextExecutionStep();
         Provider nextProvider = providerRepository
-                .findProviderById(nextExecutionDetails.getProviderId())
+                .findProviderById(executionStep.getProviderId())
                 .orElseThrow();
 
         File fileToSend = null;
         try {
-            URI uri = provider.buildDownloadURI(providerExecutionResultRequest.getFilename());
-            Resource file = providerClient.getFile(uri);
+            URI uri = providerExecutionResultRequest.getUri();
+            Resource file = providerClient.retrieveProcessedFileRequest(uri);
 
             Path tempFile = Files.createTempFile(null, null);
             Files.write(tempFile, file.getInputStream().readAllBytes());
             fileToSend = tempFile.toFile();
 
-            validateExecutionDetailsWithProviderFound(nextProvider, nextExecutionDetails);
+            validateExecutionDetailsWithProviderFound(nextProvider, executionStep);
             callProviderClient(execution, nextProvider, fileToSend);
         } catch (IOException e) {
             e.printStackTrace();
@@ -119,17 +140,18 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
     }
 
     private void callProviderClient(Execution execution, Provider provider, File file) {
-        ProviderResponse endpointToCheck = providerClient.postFile(execution.getId(), provider.getURI(), file);
+        providerClient.processRequest(execution.getId(), execution.getStepIdFromCurrentExecutionStep(), provider.getUrl(), file);
+        execution.setCurrentExecutionStepState(ExecutionStepState.IN_PROGRESS);
 
         // TODO adiccionar logica para tempo maximo de processamento
     }
 
-    private void validateExecutionDetailsWithProviderFound(Provider provider, ExecutionRequestFlowDetails executionDetails) {
-        if (!provider.isInputSupportedType(executionDetails.getInputType())) {
+    private void validateExecutionDetailsWithProviderFound(Provider provider, ExecutionStep executionStep) {
+        if (!provider.isInputSupportedType(executionStep.getInputType())) {
             throw new IllegalArgumentException();
         }
 
-        if (!provider.isOutputSupportedType(executionDetails.getOutputType())) {
+        if (!provider.isOutputSupportedType(executionStep.getOutputType())) {
             throw new IllegalArgumentException();
         }
     }
