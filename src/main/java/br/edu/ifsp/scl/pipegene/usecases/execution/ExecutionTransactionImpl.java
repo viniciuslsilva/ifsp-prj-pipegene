@@ -140,9 +140,12 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
     }
 
     private void callProviderClient(Execution execution, Provider provider, File file) {
-        providerClient.processRequest(execution.getId(), execution.getStepIdFromCurrentExecutionStep(), provider.getUrl(), file);
-        execution.setCurrentExecutionStepState(ExecutionStepState.IN_PROGRESS);
-
+        try {
+            providerClient.processRequest(execution.getId(), execution.getStepIdFromCurrentExecutionStep(), provider.getUrl(), file);
+            execution.setCurrentExecutionStepState(ExecutionStepState.IN_PROGRESS);
+        } catch (Exception e) {
+            execution.setCurrentExecutionStepState(ExecutionStepState.ERROR);
+        }
         // TODO adiccionar logica para tempo maximo de processamento
     }
 

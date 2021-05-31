@@ -32,9 +32,8 @@ public class ExecutionController {
             @RequestBody @Valid ExecutionRequest executionRequest) {
         UUID executionId = executionService.addNewExecution(projectId, executionRequest);
 
-        ExecutionResponse response = ExecutionResponse.builder()
-                .executionId(executionId)
-                .build();
+        ExecutionResponse response = new ExecutionResponse();
+        response.setId(executionId);
 
         return ResponseEntity.ok(response);
     }
@@ -44,7 +43,16 @@ public class ExecutionController {
             @PathVariable UUID projectId,
             @PathVariable UUID executionId
     ) {
-        Execution response = executionService.findExecutionById(projectId, executionId);
+        Execution execution = executionService.findExecutionById(projectId, executionId);
+        ExecutionResponse response = new ExecutionResponse(
+                execution.getId(),
+                execution.getProject(),
+                execution.getDataset(),
+                execution.getStatus(),
+                execution.getExecutionResult(),
+                execution.getCurrentStep(),
+                execution.getSteps()
+        );
 
         return ResponseEntity.ok(response);
     }
