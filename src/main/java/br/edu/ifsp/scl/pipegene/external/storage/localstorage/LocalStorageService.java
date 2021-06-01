@@ -1,5 +1,6 @@
 package br.edu.ifsp.scl.pipegene.external.storage.localstorage;
 
+import br.edu.ifsp.scl.pipegene.domain.Dataset;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,28 +26,31 @@ public class LocalStorageService implements ObjectStorageService {
     private static final String ABSOLUTE_UPLOAD_PATH = "src/main/resources/static/uploads/";
     private static final String ABSOLUTE_TEMP_PATH = "src/main/resources/static/temp/";
     private static final String UPLOAD_PATH = "/static/uploads/";
-    public static final Set<String> FILES = loadFiles();
+    public static final Set<Dataset> FILES = loadFiles();
 
     @Override
-    public String putObject(MultipartFile multipartFile) {
-        String filename = UUID.randomUUID().toString() + "_" + multipartFile.getOriginalFilename();
+    public Dataset putObject(MultipartFile multipartFile) {
+        UUID id = UUID.randomUUID();
+        String filename = id.toString() + "_uploads_" + multipartFile.getOriginalFilename() ;
         File file = new File(ABSOLUTE_UPLOAD_PATH + filename);
-        System.out.println(ABSOLUTE_UPLOAD_PATH + filename);
 
         writeFile(file, multipartFile::getBytes);
-        FILES.add(filename);
-        return filename;
+
+        Dataset dataset = Dataset.of(id, filename);
+        FILES.add(dataset);
+
+        return dataset;
     }
 
     @Override
-    public File getObject(String filename) {
-        logger.info(ABSOLUTE_UPLOAD_PATH +filename);
-        if (!FILES.contains(filename)) {
-            logger.info("File not found:" + filename);
+    public File getObject(Dataset dataset) {
+        logger.info(ABSOLUTE_UPLOAD_PATH + dataset.getFilename());
+        if (FILES.stream().noneMatch(f -> f.getId().equals(dataset.getId()))) {
+            logger.info("File not found:" + dataset.getFilename());
             return null;
         }
 
-        return new File(getClass().getResource(UPLOAD_PATH + filename).getFile());
+        return new File(getClass().getResource(UPLOAD_PATH + dataset.getFilename()).getFile());
     }
 
     @Override
@@ -61,7 +65,7 @@ public class LocalStorageService implements ObjectStorageService {
 
     @Override
     public File getTempObject(String filename) {
-        logger.info("getTempObject => "+ ABSOLUTE_TEMP_PATH +filename);
+        logger.info("getTempObject => " + ABSOLUTE_TEMP_PATH + filename);
         return new File(getClass().getResource(ABSOLUTE_TEMP_PATH + filename).getFile());
     }
 
@@ -77,11 +81,14 @@ public class LocalStorageService implements ObjectStorageService {
         }
     }
 
-    private static Set<String> loadFiles() {
+    private static Set<Dataset> loadFiles() {
         try {
             return Stream.of(Objects.requireNonNull(new File(ABSOLUTE_UPLOAD_PATH).listFiles()))
                     .filter(file -> !file.isDirectory())
-                    .map(File::getName)
+                    .map(file -> {
+                        UUID id = UUID.fromString(file.getName().split("_uploads_")[0]);
+                        return Dataset.of(id, file.getName());
+                    })
                     .collect(Collectors.toSet());
         } catch (Exception e) {
             e.printStackTrace();

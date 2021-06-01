@@ -1,9 +1,9 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution;
 
+import br.edu.ifsp.scl.pipegene.domain.Dataset;
 import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
 import br.edu.ifsp.scl.pipegene.domain.Project;
-import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionRepository;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.QueueService;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
@@ -13,6 +13,7 @@ import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionStepRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,7 +32,7 @@ public class ExecutionServiceImpl implements ExecutionService {
     }
 
     @Override
-    public UUID addNewExecution(UUID projectId, ExecutionRequest executionRequest) {
+    public Execution addNewExecution(UUID projectId, ExecutionRequest executionRequest) {
         Optional<Project> optionalProject = projectRepository.findProjectById(projectId);
         if (optionalProject.isEmpty()) {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
@@ -44,7 +45,7 @@ public class ExecutionServiceImpl implements ExecutionService {
 
         Boolean executionRequestIsValid = executionRepository.bathProviderInfoIsValid(
                 executionRequest.getExecutionSteps().stream()
-                        .map(this::mapToProvider)
+                        .map(ExecutionStepRequest::convertToProvider)
                         .collect(Collectors.toList())
         );
 
@@ -53,15 +54,11 @@ public class ExecutionServiceImpl implements ExecutionService {
         }
 
         UUID executionId = queueService.add(executionRequest);
-        executionRepository.saveExecution(
-                Execution.of(executionId, project, executionRequest.getDataset(), ExecutionStatusEnum.WAITING)
+        Dataset dataset = project.findDatasetById(executionRequest.getDataset());
+        return executionRepository.saveExecution(
+                Execution.createWithPartialValues(executionId, project, dataset, ExecutionStatusEnum.WAITING)
         );
 
-        return executionId;
-    }
-
-    private Provider mapToProvider(ExecutionStepRequest e) {
-        return Provider.of(e.getProviderId(), e.getInputType(), e.getOutputType());
     }
 
     @Override
@@ -80,5 +77,13 @@ public class ExecutionServiceImpl implements ExecutionService {
         return opt.get();
     }
 
+    @Override
+    public List<Execution> listAllExecutions(UUID projectId) {
+        Boolean projectExists = projectRepository.projectExists(projectId);
+        if (!projectExists) {
+            throw new ResourceNotFoundException("Not found project with id: " + projectId);
+        }
 
+        return projectRepository.findAllExecutionsByProjectId(projectId);
+    }
 }

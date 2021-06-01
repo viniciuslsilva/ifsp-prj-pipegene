@@ -22,7 +22,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     @Override
     public Optional<Provider> findProviderById(UUID id) {
         if (fakeDatabase.PROVIDERS.containsKey(id)) {
-            return Optional.of(fakeDatabase.PROVIDERS.get(id).toProvider());
+            return Optional.of(fakeDatabase.PROVIDERS.get(id).convertToProvider());
         }
 
         return Optional.empty();
@@ -31,15 +31,14 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     @Override
     public List<Provider> findAllProviders() {
         return fakeDatabase.PROVIDERS.values().stream()
-                .map(ProviderEntity::toProvider)
+                .map(ProviderEntity::convertToProvider)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Provider saveNewProvider(Provider provider) {
-        UUID id = UUID.randomUUID();
-        provider.setId(id);
-        fakeDatabase.PROVIDERS.put(id, ProviderEntity.of(provider));
-        return provider;
+        ProviderEntity entity = ProviderEntity.createFromProviderWithoutId(provider);
+        fakeDatabase.PROVIDERS.put(entity.getId(), entity);
+        return entity.convertToProvider();
     }
 }

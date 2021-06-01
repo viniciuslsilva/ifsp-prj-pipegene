@@ -2,7 +2,7 @@ package br.edu.ifsp.scl.pipegene.usecases.provider;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderRepository;
-import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderRequest;
+import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
-    public Provider createNewProject(ProviderRequest providerRequest) {
-        return providerRepository.saveNewProvider(providerRequest.toProvider());
+    public Provider createNewProvider(ProviderRequest providerRequest) {
+        return providerRepository.saveNewProvider(providerRequest.convertToProvider());
     }
 }

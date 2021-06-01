@@ -10,8 +10,8 @@ import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderClient;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderRepository;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionStepRequest;
-import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderExecutionResultRequest;
-import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderExecutionResultStatus;
+import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultRequest;
+import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -145,6 +145,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
             execution.setCurrentExecutionStepState(ExecutionStepState.IN_PROGRESS);
         } catch (Exception e) {
             execution.setCurrentExecutionStepState(ExecutionStepState.ERROR);
+            e.printStackTrace();
         }
         // TODO adiccionar logica para tempo maximo de processamento
     }

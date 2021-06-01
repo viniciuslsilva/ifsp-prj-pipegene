@@ -16,7 +16,7 @@ public interface ExecutionRepository {
 
     Optional<Execution> findExecutionByExecutionId(UUID executionId);
 
-    void saveExecution(Execution execution);
+    Execution saveExecution(Execution execution);
 
     void updateExecution(Execution execution);
 

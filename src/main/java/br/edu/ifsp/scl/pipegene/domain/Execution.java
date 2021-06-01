@@ -8,7 +8,7 @@ import java.util.UUID;
 public class Execution {
     private UUID id;
     private Project project;
-    private String dataset;
+    private Dataset dataset;
     private ExecutionStatusEnum status;
 
     private URI executionResult;
@@ -66,29 +66,31 @@ public class Execution {
         steps.get(currentStep).setState(state);
     }
 
-    private Execution(UUID id, Project project, String dataset, ExecutionStatusEnum status) {
+    private Execution(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status) {
         this.id = id;
         this.project = project;
         this.dataset = dataset;
         this.status = status;
     }
 
-    private Execution(UUID id, Project project, String dataset, ExecutionStatusEnum status, Integer currentStep, List<ExecutionStep> steps) {
+    private Execution(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status, Integer currentStep, List<ExecutionStep> steps, URI executionResult) {
         this.id = id;
         this.project = project;
         this.dataset = dataset;
         this.status = status;
         this.currentStep = currentStep;
         this.steps = steps;
+        this.executionResult = executionResult;
     }
 
 
-    public static Execution of(UUID id, Project project, String dataset, ExecutionStatusEnum status) {
+    public static Execution createWithPartialValues(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status) {
         return new Execution(id, project, dataset, status);
     }
 
-    public static Execution of(UUID id, Project project, String dataset, ExecutionStatusEnum status, Integer currentStep, List<ExecutionStep> steps) {
-        return new Execution(id, project, dataset, status, currentStep, steps);
+    public static Execution createWithAllValues(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status,
+                                                Integer currentStep, List<ExecutionStep> steps, URI executionResult) {
+        return new Execution(id, project, dataset, status, currentStep, steps, executionResult);
     }
 
     public UUID getId() {
@@ -111,7 +113,7 @@ public class Execution {
         return new ArrayList<>(steps);
     }
 
-    public String getDataset() {
+    public Dataset getDataset() {
         return dataset;
     }
 

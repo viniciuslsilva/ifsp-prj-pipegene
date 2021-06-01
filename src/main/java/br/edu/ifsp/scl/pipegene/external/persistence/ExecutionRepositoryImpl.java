@@ -1,7 +1,6 @@
 package br.edu.ifsp.scl.pipegene.external.persistence;
 
 import br.edu.ifsp.scl.pipegene.domain.Execution;
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStep;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ExecutionEntity;
@@ -35,7 +34,7 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     public Optional<Execution> findExecutionByProjectIdAndExecutionId(UUID projectId, UUID executionId) {
         if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
             Project project = projectRepository.findProjectById(projectId).orElseThrow();
-            return Optional.of(fakeDatabase.EXECUTION_STATUS_MAP.get(executionId).toExecutionStatus(project));
+            return Optional.of(fakeDatabase.EXECUTION_STATUS_MAP.get(executionId).convertToExecution(project));
         }
         return Optional.empty();
     }
@@ -44,7 +43,7 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     public Optional<Execution> findExecutionByExecutionId(UUID executionId) {
         if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
             return Optional.of(fakeDatabase.EXECUTION_STATUS_MAP.get(executionId))
-                    .map(execution -> execution.toExecutionStatus(
+                    .map(execution -> execution.convertToExecution(
                             projectRepository.findProjectById(execution.getProjectId())
                                     .orElseThrow()
                             )
@@ -54,14 +53,17 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     }
 
     @Override
-    public void saveExecution(Execution execution) {
-        ExecutionEntity entity = ExecutionEntity.of(execution);
+    public Execution saveExecution(Execution execution) {
+
+        ExecutionEntity entity = ExecutionEntity.createNewEntity(execution);
         fakeDatabase.EXECUTION_STATUS_MAP.put(entity.getId(), entity);
+        Project project =fakeDatabase.PROJECTS.get(entity.getProjectId()).convertToProject();
+        return entity.convertToExecution(project);
     }
 
     @Override
     public void updateExecution(Execution execution) {
-        ExecutionEntity entity = ExecutionEntity.of(execution);
+        ExecutionEntity entity = ExecutionEntity.createNewEntity(execution);
         fakeDatabase.EXECUTION_STATUS_MAP.replace(entity.getId(), entity);
     }
 
@@ -70,7 +72,7 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
         if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
             ExecutionEntity entity = fakeDatabase.EXECUTION_STATUS_MAP.get(executionId);
             Project project = projectRepository.findProjectById(entity.getProjectId()).orElseThrow();
-            Execution execution = entity.toExecutionStatus(project);
+            Execution execution = entity.convertToExecution(project);
 
             if (execution.getStepIdFromCurrentExecutionStep().equals(stepId)) {
                 return Optional.of(execution);

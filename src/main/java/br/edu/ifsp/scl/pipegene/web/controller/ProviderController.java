@@ -3,14 +3,16 @@ package br.edu.ifsp.scl.pipegene.web.controller;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionTransaction;
 import br.edu.ifsp.scl.pipegene.usecases.provider.ProviderService;
-import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderExecutionResultRequest;
-import br.edu.ifsp.scl.pipegene.web.model.provider.ProviderRequest;
+import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultRequest;
+import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderRequest;
+import br.edu.ifsp.scl.pipegene.web.model.provider.response.ProviderResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 public class ProviderController {
@@ -24,15 +26,21 @@ public class ProviderController {
     }
 
     @PostMapping("v1/providers")
-    public ResponseEntity<?> addNewProvider(@RequestBody @Valid ProviderRequest providerRequest) {
-        Provider provider = providerService.createNewProject(providerRequest);
-        return ResponseEntity.ok(provider);
+    public ResponseEntity<ProviderResponse> addNewProvider(@RequestBody @Valid ProviderRequest providerRequest) {
+        Provider provider = providerService.createNewProvider(providerRequest);
+
+        return ResponseEntity.ok(ProviderResponse.createFromProvider(provider));
     }
 
     @GetMapping("v1/providers")
-    public ResponseEntity<?> listAllProviders() {
+    public ResponseEntity<List<ProviderResponse>> listAllProviders() {
         List<Provider> providers = providerService.listAllProviders();
-        return ResponseEntity.ok(providers);
+
+        return ResponseEntity.ok(
+                providers.stream()
+                        .map(ProviderResponse::createFromProvider)
+                        .collect(Collectors.toList())
+        );
     }
 
     @PostMapping("v1/providers/{providerId}/executions/{executionId}/steps/{stepId}")

@@ -26,13 +26,13 @@ public class ProviderEntity {
         return new ProviderEntity(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
     }
 
-    public static ProviderEntity of(Provider provider) {
-        return new ProviderEntity(provider.getId(), provider.getName(), provider.getDescription(), provider.getUrl(),
+    public static ProviderEntity createFromProviderWithoutId(Provider provider) {
+        return new ProviderEntity(UUID.randomUUID(), provider.getName(), provider.getDescription(), provider.getUrl(),
                 provider.getInputSupportedTypes(), provider.getOutputSupportedTypes());
     }
 
-    public Provider toProvider() {
-        return Provider.of(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
+    public Provider convertToProvider() {
+        return Provider.createWithAllValues(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
     }
 
     public UUID getId() {

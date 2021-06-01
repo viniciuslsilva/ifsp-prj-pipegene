@@ -1,4 +1,4 @@
-package br.edu.ifsp.scl.pipegene.web.model.provider;
+package br.edu.ifsp.scl.pipegene.web.model.provider.request;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 
@@ -31,8 +31,8 @@ public class ProviderRequest {
         this.outputSupportedTypes = outputSupportedTypes;
     }
 
-    public Provider toProvider() {
-        return Provider.of(null, name, description, url, inputSupportedTypes, outputSupportedTypes);
+    public Provider convertToProvider() {
+        return Provider.createWithoutId(name, description, url, inputSupportedTypes, outputSupportedTypes);
     }
 
     public String getName() {

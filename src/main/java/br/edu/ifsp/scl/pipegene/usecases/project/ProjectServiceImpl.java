@@ -1,5 +1,6 @@
 package br.edu.ifsp.scl.pipegene.usecases.project;
 
+import br.edu.ifsp.scl.pipegene.domain.Dataset;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
@@ -25,7 +26,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Project createNewProject(String name, String description, List<MultipartFile> files) {
-        List<String> datasets = files.stream().map(objectStorageService::putObject).collect(Collectors.toList());
+        List<Dataset> datasets = files.stream().map(objectStorageService::putObject).collect(Collectors.toList());
 
         return projectRepository.saveNewProject(name, description, datasets);
     }

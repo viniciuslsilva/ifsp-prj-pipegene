@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class ExecutionEntity {
     private UUID id;
     private UUID projectId;
-    private String dataset;
+    private DatasetEntity dataset;
     private String status;
     private Integer currentStep;
     private List<ExecutionStepEntity> steps;
@@ -22,23 +22,11 @@ public class ExecutionEntity {
     // TODO("Add attributes created_at and limit_date")
 
 
-    public ExecutionEntity() { }
-
-    private ExecutionEntity(UUID id, UUID projectId, String dataset, String status, Integer currentStep, List<ExecutionStepEntity> steps, URI executionResult) {
-        this.id = id;
-        this.projectId = projectId;
-        this.dataset = dataset;
-        this.status = status;
-        this.currentStep = currentStep;
-        this.steps = new ArrayList<>(steps);
-        this.executionResult = executionResult;
-    }
-
-    public static ExecutionEntity of(Execution execution) {
+    public static ExecutionEntity createNewEntity(Execution execution) {
         return new ExecutionEntity(
                 execution.getId(),
                 execution.getProject().getId(),
-                execution.getDataset(),
+                DatasetEntity.createFromDataset(execution.getDataset()),
                 execution.getStatus().name(),
                 execution.getCurrentStep(),
                 execution.getSteps().stream().map(ExecutionStepEntity::of).collect(Collectors.toList()),
@@ -46,9 +34,25 @@ public class ExecutionEntity {
         );
     }
 
-    public Execution toExecutionStatus(Project project) {
-        return Execution.of(id, project, dataset, ExecutionStatusEnum.valueOf(status), currentStep,
-                steps.stream().map(ExecutionStepEntity::toExecutionStep).collect(Collectors.toList()));
+    public Execution convertToExecution(Project project) {
+        return Execution.createWithAllValues(id, project, dataset.convertToDataset(), ExecutionStatusEnum.valueOf(status),
+                currentStep, steps.stream()
+                        .map(ExecutionStepEntity::toExecutionStep)
+                        .collect(Collectors.toList()),
+                executionResult
+        );
+    }
+
+    public ExecutionEntity() { }
+
+    private ExecutionEntity(UUID id, UUID projectId, DatasetEntity dataset, String status, Integer currentStep, List<ExecutionStepEntity> steps, URI executionResult) {
+        this.id = id;
+        this.projectId = projectId;
+        this.dataset = dataset;
+        this.status = status;
+        this.currentStep = currentStep;
+        this.steps = new ArrayList<>(steps);
+        this.executionResult = executionResult;
     }
 
     public UUID getId() {
@@ -75,7 +79,7 @@ public class ExecutionEntity {
         this.projectId = projectId;
     }
 
-    public String getDataset() {
+    public DatasetEntity getDataset() {
         return dataset;
     }
 

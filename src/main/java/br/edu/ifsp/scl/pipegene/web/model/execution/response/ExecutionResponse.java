@@ -1,11 +1,12 @@
 package br.edu.ifsp.scl.pipegene.web.model.execution.response;
 
+import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
 import br.edu.ifsp.scl.pipegene.domain.ExecutionStep;
 import br.edu.ifsp.scl.pipegene.domain.Project;
+import br.edu.ifsp.scl.pipegene.web.model.DatasetDTO;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public class ExecutionResponse {
 
     private UUID id;
     private Project project;
-    private String dataset;
+    private DatasetDTO dataset;
     private ExecutionStatusEnum status;
 
     private URI executionResult;
@@ -21,10 +22,30 @@ public class ExecutionResponse {
     private Integer currentStep;
     private List<ExecutionStep> steps;
 
-    public ExecutionResponse() {
+    public static ExecutionResponse createJustId(UUID id) {
+        return new ExecutionResponse(id);
     }
 
-    public ExecutionResponse(UUID id, Project project, String dataset, ExecutionStatusEnum status,
+    public static ExecutionResponse createFromExecution(Execution e) {
+        return new ExecutionResponse(
+                e.getId(),
+                e.getProject(),
+                DatasetDTO.createFromDataset(e.getDataset()),
+                e.getStatus(),
+                e.getExecutionResult(),
+                e.getCurrentStep(),
+                e.getSteps()
+        );
+    }
+
+    private ExecutionResponse(UUID id) {
+        this.id = id;
+    }
+
+    private ExecutionResponse() {
+    }
+
+    private ExecutionResponse(UUID id, Project project, DatasetDTO dataset, ExecutionStatusEnum status,
                              URI executionResult, Integer currentStep, List<ExecutionStep> steps) {
         this.id = id;
         this.project = project;
@@ -51,11 +72,11 @@ public class ExecutionResponse {
         this.project = project;
     }
 
-    public String getDataset() {
+    public DatasetDTO getDataset() {
         return dataset;
     }
 
-    public void setDataset(String dataset) {
+    public void setDataset(DatasetDTO dataset) {
         this.dataset = dataset;
     }
 

@@ -3,17 +3,18 @@ package br.edu.ifsp.scl.pipegene.web.model.execution.request;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ExecutionRequest {
 
     @NotNull
     private List<ExecutionStepRequest> executionSteps;
     @NotNull
-    private String dataset;
+    private UUID dataset;
 
     public ExecutionRequest() { }
 
-    public ExecutionRequest(List<ExecutionStepRequest> executionSteps, String dataset) {
+    public ExecutionRequest(List<ExecutionStepRequest> executionSteps, UUID dataset) {
         this.executionSteps = executionSteps;
         this.dataset = dataset;
     }
@@ -22,7 +23,7 @@ public class ExecutionRequest {
         return new ArrayList<>(executionSteps);
     }
 
-    public String getDataset() {
+    public UUID getDataset() {
         return dataset;
     }
 

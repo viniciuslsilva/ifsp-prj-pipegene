@@ -1,4 +1,4 @@
-package br.edu.ifsp.scl.pipegene.web.model.provider;
+package br.edu.ifsp.scl.pipegene.web.model.provider.request;
 
 import java.net.URI;
 

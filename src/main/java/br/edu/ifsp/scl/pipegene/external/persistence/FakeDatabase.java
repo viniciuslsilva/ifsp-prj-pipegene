@@ -1,5 +1,6 @@
 package br.edu.ifsp.scl.pipegene.external.persistence;
 
+import br.edu.ifsp.scl.pipegene.domain.Dataset;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ExecutionEntity;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProjectEntity;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProviderEntity;
@@ -19,17 +20,25 @@ public final class FakeDatabase {
     public final Map<UUID, ProviderEntity> PROVIDERS;
     public final Map<UUID, ExecutionEntity> EXECUTION_STATUS_MAP = new HashMap<>();
 
+    private final String DATASET_MOCK_FILE_NAME = "042e4e39-ba0b-49d1-a01a-237333d0b1a5_uploads_mock_GBM_MEMo.maf";
+
+    private final UUID PROJECT_1_ID = UUID.fromString("53bb719a-e982-4785-bb53-40dc71d6dd9a");
+    private final Dataset PROJECT_1_DATASET = new Dataset(UUID.fromString("042e4e39-ba0b-49d1-a01a-237333d0b1a5"), DATASET_MOCK_FILE_NAME);
+
+    private final UUID PROJECT_2_ID = UUID.fromString("e1d33cc3-f04d-45c8-8998-20cd0d4af878");
+    private final Dataset PROJECT_2_DATASET = new Dataset(UUID.fromString("b319fbe9-e9ec-44bf-80fc-6897603cad14"), DATASET_MOCK_FILE_NAME);
+
     public FakeDatabase() {
         PROJECTS = Stream.of(
-                ProjectEntity.of(
-                        UUID.fromString("53bb719a-e982-4785-bb53-40dc71d6dd9a"),
-                        Collections.singletonList("mock_GBM_MEMo.maf"),
+                ProjectEntity.createEntityInstance(
+                        PROJECT_1_ID,
+                        Collections.singletonList(PROJECT_1_DATASET),
                         "Fake Project",
                         "description Fake Project"
                 ),
-                ProjectEntity.of(
-                        UUID.fromString("e1d33cc3-f04d-45c8-8998-20cd0d4af878"),
-                        Collections.singletonList("mock_GBM_MEMo.maf"),
+                ProjectEntity.createEntityInstance(
+                        PROJECT_2_ID,
+                        Collections.singletonList(PROJECT_2_DATASET),
                         "Fake Project 2",
                         "descripiton Fake Project 2"
                 )

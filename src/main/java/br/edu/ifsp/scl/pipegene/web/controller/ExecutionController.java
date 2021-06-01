@@ -12,7 +12,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @EnableAsync
 @RestController
@@ -30,31 +32,30 @@ public class ExecutionController {
     public ResponseEntity<ExecutionResponse> addNewExecution(
             @PathVariable UUID projectId,
             @RequestBody @Valid ExecutionRequest executionRequest) {
-        UUID executionId = executionService.addNewExecution(projectId, executionRequest);
+        Execution execution = executionService.addNewExecution(projectId, executionRequest);
 
-        ExecutionResponse response = new ExecutionResponse();
-        response.setId(executionId);
+        return ResponseEntity.ok(ExecutionResponse.createJustId(execution.getId()));
+    }
 
-        return ResponseEntity.ok(response);
+    @GetMapping("v1/projects/{projectId}/executions")
+    public ResponseEntity<List<ExecutionResponse>> listAllExecutions(@PathVariable UUID projectId) {
+        List<Execution> executions = executionService.listAllExecutions(projectId);
+
+        return ResponseEntity.ok(
+                executions.stream()
+                        .map(ExecutionResponse::createFromExecution)
+                        .collect(Collectors.toList())
+        );
     }
 
     @GetMapping("v1/projects/{projectId}/executions/{executionId}")
-    public ResponseEntity<?> findExecutionById(
+    public ResponseEntity<ExecutionResponse> findExecutionById(
             @PathVariable UUID projectId,
             @PathVariable UUID executionId
     ) {
         Execution execution = executionService.findExecutionById(projectId, executionId);
-        ExecutionResponse response = new ExecutionResponse(
-                execution.getId(),
-                execution.getProject(),
-                execution.getDataset(),
-                execution.getStatus(),
-                execution.getExecutionResult(),
-                execution.getCurrentStep(),
-                execution.getSteps()
-        );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ExecutionResponse.createFromExecution(execution));
     }
 
     @Async
