@@ -1,8 +1,6 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Provider {
 
@@ -12,6 +10,7 @@ public class Provider {
     private String url;
     private Set<String> inputSupportedTypes;
     private Set<String> outputSupportedTypes;
+    private Set<Operation> operations = Set.of(new ColumnOperation());
 
     public static Provider createWithAllValues(UUID id, String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
         return new Provider(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
@@ -74,5 +73,9 @@ public class Provider {
 
     public Set<String> getOutputSupportedTypes() {
         return new HashSet<>(outputSupportedTypes);
+    }
+
+    public Set<Operation> getOperations() {
+        return new HashSet<>(operations);
     }
 }

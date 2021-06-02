@@ -24,6 +24,12 @@ public class ProjectEntity {
         return new ProjectEntity(id, datasetIds, name, description);
     }
 
+    public static ProjectEntity createEntityInstance(Project project) {
+        List<DatasetEntity> datasetIds= project.getDatasets().stream().map(DatasetEntity::createFromDataset).collect(Collectors.toList());
+        return new ProjectEntity(project.getId(), datasetIds, project.getName(), project.getDescription());
+    }
+
+
     public Project convertToProject() {
         return Project.of(id, datasets.stream()
                 .map(DatasetEntity::convertToDataset)

@@ -55,10 +55,10 @@ public class ExecutionServiceImpl implements ExecutionService {
 
         UUID executionId = queueService.add(executionRequest);
         Dataset dataset = project.findDatasetById(executionRequest.getDataset());
+
         return executionRepository.saveExecution(
                 Execution.createWithPartialValues(executionId, project, dataset, ExecutionStatusEnum.WAITING)
         );
-
     }
 
     @Override

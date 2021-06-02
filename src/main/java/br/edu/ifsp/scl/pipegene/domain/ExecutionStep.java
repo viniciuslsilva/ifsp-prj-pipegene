@@ -10,6 +10,8 @@ public class ExecutionStep {
     private String inputType;
     private String outputType;
     private ExecutionStepState state;
+    private Operation operation = new ColumnOperation();
+
 
     private ExecutionStep(UUID stepId, UUID providerId, String inputType, String outputType, ExecutionStepState state) {
         this.stepId = Objects.nonNull(stepId) ? stepId : UUID.randomUUID();
@@ -50,4 +52,9 @@ public class ExecutionStep {
     public void setState(ExecutionStepState state) {
         this.state = state;
     }
+
+    public Operation getOperation() {
+        return operation;
+    }
+
 }

@@ -1,9 +1,7 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution;
 
-import br.edu.ifsp.scl.pipegene.domain.Execution;
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStep;
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStepState;
-import br.edu.ifsp.scl.pipegene.domain.Provider;
+import br.edu.ifsp.scl.pipegene.domain.*;
+import br.edu.ifsp.scl.pipegene.external.client.model.ProviderClientRequest;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionRepository;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.ExecutionQueueElement;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
@@ -66,7 +64,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
 
         logger.info("Sending queue element " + executionQueueElement.getId() + " to provider: " + provider.getId());
 
-        callProviderClient(execution, provider, file);
+        callProviderClient(execution, executionStep.getOperation(), provider, file);
         logger.info("Update execution in database");
         executionRepository.updateExecution(execution);
     }
@@ -127,7 +125,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
             fileToSend = tempFile.toFile();
 
             validateExecutionDetailsWithProviderFound(nextProvider, executionStep);
-            callProviderClient(execution, nextProvider, fileToSend);
+            callProviderClient(execution, executionStep.getOperation(), nextProvider, fileToSend);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -139,9 +137,13 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
         executionRepository.updateExecution(execution);
     }
 
-    private void callProviderClient(Execution execution, Provider provider, File file) {
+    private void callProviderClient(Execution execution, Operation operation, Provider provider, File file) {
         try {
-            providerClient.processRequest(execution.getId(), execution.getStepIdFromCurrentExecutionStep(), provider.getUrl(), file);
+            ProviderClientRequest request = new ProviderClientRequest(
+                    execution.getId(), execution.getStepIdFromCurrentExecutionStep(), provider.getUrl(), file,
+                    operation
+            );
+            providerClient.processRequest(request);
             execution.setCurrentExecutionStepState(ExecutionStepState.IN_PROGRESS);
         } catch (Exception e) {
             execution.setCurrentExecutionStepState(ExecutionStepState.ERROR);

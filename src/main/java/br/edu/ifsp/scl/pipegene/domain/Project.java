@@ -1,5 +1,7 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
+import br.edu.ifsp.scl.pipegene.web.model.project.ProjectUpdateRequest;
+
 import java.util.*;
 
 public class Project {
@@ -44,5 +46,17 @@ public class Project {
 
     public String getDescription() {
         return description;
+    }
+
+    public Project getUpdatedInstance(ProjectUpdateRequest request) {
+        String newName = Objects.nonNull(request.getName()) ? request.getName() : name;
+        String newDescription = Objects.nonNull(request.getDescription()) ? request.getDescription() : description;
+
+        return new Project(
+                id,
+                datasets,
+                newName,
+                newDescription
+        );
     }
 }

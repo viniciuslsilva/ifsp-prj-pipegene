@@ -30,6 +30,13 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
+    public Project updateProject(Project project) {
+        ProjectEntity entity = ProjectEntity.createEntityInstance(project);
+        fakeDatabase.PROJECTS.replace(project.getId(), entity);
+        return project;
+    }
+
+    @Override
     public Optional<Project> findProjectById(UUID id) {
         if (fakeDatabase.PROJECTS.containsKey(id)) {
             return Optional.of(fakeDatabase.PROJECTS.get(id).convertToProject());

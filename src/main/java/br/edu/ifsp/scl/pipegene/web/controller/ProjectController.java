@@ -3,10 +3,12 @@ package br.edu.ifsp.scl.pipegene.web.controller;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.usecases.project.ProjectService;
 import br.edu.ifsp.scl.pipegene.web.model.project.ProjectResponse;
+import br.edu.ifsp.scl.pipegene.web.model.project.ProjectUpdateRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,6 +46,14 @@ public class ProjectController {
     @GetMapping("v1/projects/{projectId}")
     public ResponseEntity<ProjectResponse> findProjectById(@PathVariable UUID projectId) {
         Project project = projectService.findProjectById(projectId);
+
+        return ResponseEntity.ok(ProjectResponse.createFromProject(project));
+    }
+
+    @PutMapping("v1/projects/{projectId}")
+    public ResponseEntity<ProjectResponse> updateProjectById(@PathVariable UUID projectId,
+                                                             @RequestBody @Valid ProjectUpdateRequest request) {
+        Project project = projectService.updateProjectById(projectId, request);
 
         return ResponseEntity.ok(ProjectResponse.createFromProject(project));
     }

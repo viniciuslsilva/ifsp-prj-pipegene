@@ -24,8 +24,6 @@ public class LocalStorageService implements ObjectStorageService {
     private final Logger logger = LoggerFactory.getLogger(LocalStorageService.class);
 
     private static final String ABSOLUTE_UPLOAD_PATH = "src/main/resources/static/uploads/";
-    private static final String ABSOLUTE_TEMP_PATH = "src/main/resources/static/temp/";
-    private static final String UPLOAD_PATH = "/static/uploads/";
     public static final Set<Dataset> FILES = loadFiles();
 
     @Override
@@ -50,23 +48,7 @@ public class LocalStorageService implements ObjectStorageService {
             return null;
         }
 
-        return new File(getClass().getResource(UPLOAD_PATH + dataset.getFilename()).getFile());
-    }
-
-    @Override
-    public String putTempObject(Resource file) {
-        String filename = UUID.randomUUID().toString() + "_temp_" + file.getFilename();
-        File tempFile = new File(ABSOLUTE_TEMP_PATH + filename);
-        System.out.println(ABSOLUTE_TEMP_PATH + filename);
-
-        writeFile(tempFile, () -> file.getInputStream().readAllBytes());
-        return filename;
-    }
-
-    @Override
-    public File getTempObject(String filename) {
-        logger.info("getTempObject => " + ABSOLUTE_TEMP_PATH + filename);
-        return new File(getClass().getResource(ABSOLUTE_TEMP_PATH + filename).getFile());
+        return new File(ABSOLUTE_UPLOAD_PATH + dataset.getFilename());
     }
 
 

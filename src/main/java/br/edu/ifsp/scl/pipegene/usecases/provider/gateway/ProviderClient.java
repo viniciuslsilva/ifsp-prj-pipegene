@@ -1,5 +1,6 @@
 package br.edu.ifsp.scl.pipegene.usecases.provider.gateway;
 
+import br.edu.ifsp.scl.pipegene.external.client.model.ProviderClientRequest;
 import br.edu.ifsp.scl.pipegene.external.client.model.ProviderResponse;
 import org.springframework.core.io.Resource;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 public interface ProviderClient {
 
-    ProviderResponse processRequest(UUID executionId, UUID stepId, String url, File file);
+    ProviderResponse processRequest(ProviderClientRequest request);
 
     Resource retrieveProcessedFileRequest(URI uri);
 }

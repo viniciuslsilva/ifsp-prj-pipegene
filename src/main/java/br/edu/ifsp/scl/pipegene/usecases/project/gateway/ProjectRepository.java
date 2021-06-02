@@ -12,6 +12,8 @@ public interface ProjectRepository {
 
     Project saveNewProject(String name, String description, List<Dataset> datasets);
 
+    Project updateProject(Project project);
+
     Optional<Project> findProjectById(UUID id);
 
     List<Project> findAllProjects();
