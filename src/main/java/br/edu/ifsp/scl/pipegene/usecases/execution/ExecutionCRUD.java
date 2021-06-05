@@ -6,7 +6,7 @@ import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
 import java.util.List;
 import java.util.UUID;
 
-public interface ExecutionService {
+public interface ExecutionCRUD {
 
     Execution addNewExecution(UUID projectId, ExecutionRequest executionRequest);
 

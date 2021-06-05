@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface ExecutionTransaction {
 
-    void start(ExecutionQueueElement executionQueueElement);
+    void startExecution(ExecutionQueueElement executionQueueElement);
 
     void validateNotificationFromProvider(UUID providerId, UUID executionId, UUID stepId);
 

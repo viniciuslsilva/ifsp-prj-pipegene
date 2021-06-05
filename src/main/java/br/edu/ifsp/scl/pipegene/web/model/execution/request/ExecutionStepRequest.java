@@ -2,6 +2,7 @@ package br.edu.ifsp.scl.pipegene.web.model.execution.request;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 
+import java.util.Map;
 import java.util.UUID;
 
 public class ExecutionStepRequest {
@@ -10,6 +11,8 @@ public class ExecutionStepRequest {
     private String inputType;
     private String outputType;
 
+    private Map<String, Object> params;
+
     public Provider convertToProvider() {
         return Provider.createWithPartialValues(providerId, inputType, outputType);
     }
@@ -17,19 +20,11 @@ public class ExecutionStepRequest {
     public ExecutionStepRequest() {
     }
 
-    public ExecutionStepRequest(UUID providerId, String inputType, String outputType) {
+    public ExecutionStepRequest(UUID providerId, String inputType, String outputType, Map<String, Object> params) {
         this.providerId = providerId;
         this.inputType = inputType;
         this.outputType = outputType;
-    }
-
-    @Override
-    public String toString() {
-        return "ExecutionRequestFlowDetails{" +
-                "providerId=" + providerId +
-                ", inputType='" + inputType + '\'' +
-                ", outputType='" + outputType + '\'' +
-                '}';
+        this.params = params;
     }
 
     public UUID getProviderId() {
@@ -42,5 +37,9 @@ public class ExecutionStepRequest {
 
     public String getOutputType() {
         return outputType;
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
     }
 }

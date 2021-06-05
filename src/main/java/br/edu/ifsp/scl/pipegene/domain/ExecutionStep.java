@@ -1,5 +1,7 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -10,23 +12,28 @@ public class ExecutionStep {
     private String inputType;
     private String outputType;
     private ExecutionStepState state;
-    private Operation operation = new ColumnOperation();
+    private Map<String, Object> executionStepParams;
 
 
-    private ExecutionStep(UUID stepId, UUID providerId, String inputType, String outputType, ExecutionStepState state) {
-        this.stepId = Objects.nonNull(stepId) ? stepId : UUID.randomUUID();
+    private ExecutionStep(UUID stepId, UUID providerId, String inputType, String outputType, ExecutionStepState state,
+                          Map<String, Object> executionStepParams) {
+        this.stepId = stepId;
         this.providerId = providerId;
         this.inputType = inputType;
         this.outputType = outputType;
         this.state = state;
+        this.executionStepParams = Collections.unmodifiableMap(executionStepParams);
     }
 
-    public static ExecutionStep of(UUID stepId, UUID providerId, String inputType, String outputType, ExecutionStepState state) {
-        return new ExecutionStep(stepId, providerId, inputType, outputType, state);
+    public static ExecutionStep of(UUID stepId, UUID providerId, String inputType, String outputType,
+                                   ExecutionStepState state, Map<String, Object> executionStepParams) {
+        return new ExecutionStep(stepId, providerId, inputType, outputType, state, executionStepParams);
     }
 
-    public static ExecutionStep of(UUID providerId, String inputType, String outputType, ExecutionStepState state) {
-        return new ExecutionStep(null, providerId, inputType, outputType, state);
+    public static ExecutionStep createGeneratingStepId(UUID providerId, String inputType, String outputType, ExecutionStepState state,
+                                                       Map<String, Object> executionStepParams) {
+        return new ExecutionStep(UUID.randomUUID(), providerId, inputType, outputType, state,
+                Objects.requireNonNull(executionStepParams));
     }
 
     public UUID getStepId() {
@@ -53,8 +60,7 @@ public class ExecutionStep {
         this.state = state;
     }
 
-    public Operation getOperation() {
-        return operation;
+    public Map<String, Object> getExecutionStepParams() {
+        return executionStepParams;
     }
-
 }

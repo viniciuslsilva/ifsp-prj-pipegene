@@ -1,6 +1,8 @@
 package br.edu.ifsp.scl.pipegene.external.persistence;
 
 import br.edu.ifsp.scl.pipegene.domain.Dataset;
+import br.edu.ifsp.scl.pipegene.domain.ProviderOperation;
+import br.edu.ifsp.scl.pipegene.domain.ProviderOperationParam;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ExecutionEntity;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProjectEntity;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProviderEntity;
@@ -52,7 +54,14 @@ public final class FakeDatabase {
                         "jorge provider description",
                         "http://localhost:5000",
                         Collections.singletonList("maf"),
-                        Collections.singletonList("maf")
+                        Collections.singletonList("maf"),
+                        Collections.singletonList(
+                                new ProviderOperation(
+                                        "column", "operation description",
+                                        Collections.singletonList(new ProviderOperationParam(
+                                                "text", null, "columns", "Hugo_Symbol, Chromosome"))
+                                )
+                        )
                 ),
                 ProviderEntity.of(
                         UUID.fromString("0fd493f8-fb58-455a-8cb9-d3561d111e70"),
@@ -60,7 +69,14 @@ public final class FakeDatabase {
                         "jorge provider description",
                         "http://localhost:5000",
                         Collections.singletonList("taf"),
-                        Collections.singletonList("taf")
+                        Collections.singletonList("taf"),
+                        Collections.singletonList(
+                                new ProviderOperation(
+                                        "column", "operation description",
+                                        Collections.singletonList(new ProviderOperationParam(
+                                                "text", null, "columns", "Hugo_Symbol, Chromosome"))
+                                )
+                        )
                 )
         ).collect(Collectors.toMap(ProviderEntity::getId, Function.identity()));
     }

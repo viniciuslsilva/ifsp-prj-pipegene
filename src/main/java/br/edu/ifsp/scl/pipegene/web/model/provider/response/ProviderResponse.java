@@ -1,9 +1,10 @@
 package br.edu.ifsp.scl.pipegene.web.model.provider.response;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
+import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderOperationDTO;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ProviderResponse {
 
@@ -11,8 +12,9 @@ public class ProviderResponse {
     private String name;
     private String description;
     private String url;
-    private Set<String> inputSupportedTypes;
-    private Set<String> outputSupportedTypes;
+    private Collection<String> inputSupportedTypes;
+    private Collection<String> outputSupportedTypes;
+    private Collection<ProviderOperationDTO> operations;
 
     public static ProviderResponse createFromProvider(Provider p) {
         return new ProviderResponse(
@@ -21,19 +23,24 @@ public class ProviderResponse {
                 p.getDescription(),
                 p.getUrl(),
                 p.getInputSupportedTypes(),
-                p.getOutputSupportedTypes()
+                p.getOutputSupportedTypes(),
+                p.getOperations().stream()
+                        .map(ProviderOperationDTO::createFromProviderOperation)
+                        .collect(Collectors.toList())
         );
     }
 
     private ProviderResponse() { }
 
-    private ProviderResponse(UUID id, String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
+    private ProviderResponse(UUID id, String name, String description, String url, Collection<String> inputSupportedTypes,
+                             Collection<String> outputSupportedTypes, Collection<ProviderOperationDTO> operations) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.url = url;
-        this.inputSupportedTypes = inputSupportedTypes;
-        this.outputSupportedTypes = outputSupportedTypes;
+        this.inputSupportedTypes = Collections.unmodifiableCollection(inputSupportedTypes);
+        this.outputSupportedTypes = Collections.unmodifiableCollection(outputSupportedTypes);
+        this.operations = Collections.unmodifiableCollection(operations);
     }
 
     public UUID getId() {
@@ -52,11 +59,15 @@ public class ProviderResponse {
         return url;
     }
 
-    public Set<String> getInputSupportedTypes() {
+    public Collection<String> getInputSupportedTypes() {
         return inputSupportedTypes;
     }
 
-    public Set<String> getOutputSupportedTypes() {
+    public Collection<String> getOutputSupportedTypes() {
         return outputSupportedTypes;
+    }
+
+    public Collection<ProviderOperationDTO> getOperations() {
+        return operations;
     }
 }

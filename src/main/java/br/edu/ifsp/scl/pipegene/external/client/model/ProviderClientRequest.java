@@ -1,26 +1,22 @@
 package br.edu.ifsp.scl.pipegene.external.client.model;
 
-import br.edu.ifsp.scl.pipegene.domain.Operation;
-
 import java.io.File;
+import java.util.Map;
 import java.util.UUID;
 
 public class ProviderClientRequest {
-    private UUID executionId;
-    private UUID stepId;
-    private String url;
-    private File file;
-    private Operation operation;
+    private final UUID executionId;
+    private final UUID stepId;
+    private final String url;
+    private final File file;
+    private final Map<String, Object> params;
 
-    public ProviderClientRequest() {
-    }
-
-    public ProviderClientRequest(UUID executionId, UUID stepId, String url, File file, Operation operation) {
+    public ProviderClientRequest(UUID executionId, UUID stepId, String url, File file, Map<String, Object> params) {
         this.executionId = executionId;
         this.stepId = stepId;
         this.url = url;
         this.file = file;
-        this.operation = operation;
+        this.params = params;
     }
 
     public UUID getExecutionId() {
@@ -39,7 +35,7 @@ public class ProviderClientRequest {
         return file;
     }
 
-    public Operation getOperation() {
-        return operation;
+    public Map<String, Object> getParams() {
+        return params;
     }
 }

@@ -1,7 +1,7 @@
 package br.edu.ifsp.scl.pipegene.web.controller;
 
 import br.edu.ifsp.scl.pipegene.domain.Execution;
-import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionService;
+import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionCRUD;
 import br.edu.ifsp.scl.pipegene.usecases.execution.producer.SendExecutionsToProviders;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
 import br.edu.ifsp.scl.pipegene.web.model.execution.response.ExecutionResponse;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @RestController
 public class ExecutionController {
 
-    private final ExecutionService executionService;
+    private final ExecutionCRUD executionCRUD;
     private final SendExecutionsToProviders sendExecutionsToProviders;
 
-    public ExecutionController(ExecutionService executionService, SendExecutionsToProviders sendExecutionsToProviders) {
-        this.executionService = executionService;
+    public ExecutionController(ExecutionCRUD executionCRUD, SendExecutionsToProviders sendExecutionsToProviders) {
+        this.executionCRUD = executionCRUD;
         this.sendExecutionsToProviders = sendExecutionsToProviders;
     }
 
@@ -32,14 +32,14 @@ public class ExecutionController {
     public ResponseEntity<ExecutionResponse> addNewExecution(
             @PathVariable UUID projectId,
             @RequestBody @Valid ExecutionRequest executionRequest) {
-        Execution execution = executionService.addNewExecution(projectId, executionRequest);
+        Execution execution = executionCRUD.addNewExecution(projectId, executionRequest);
 
         return ResponseEntity.ok(ExecutionResponse.createJustId(execution.getId()));
     }
 
     @GetMapping("v1/projects/{projectId}/executions")
     public ResponseEntity<List<ExecutionResponse>> listAllExecutions(@PathVariable UUID projectId) {
-        List<Execution> executions = executionService.listAllExecutions(projectId);
+        List<Execution> executions = executionCRUD.listAllExecutions(projectId);
 
         return ResponseEntity.ok(
                 executions.stream()
@@ -53,7 +53,7 @@ public class ExecutionController {
             @PathVariable UUID projectId,
             @PathVariable UUID executionId
     ) {
-        Execution execution = executionService.findExecutionById(projectId, executionId);
+        Execution execution = executionCRUD.findExecutionById(projectId, executionId);
 
         return ResponseEntity.ok(ExecutionResponse.createFromExecution(execution));
     }

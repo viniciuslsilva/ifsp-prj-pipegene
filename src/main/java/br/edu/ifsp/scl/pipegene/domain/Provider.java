@@ -8,20 +8,25 @@ public class Provider {
     private String name;
     private String description;
     private String url;
-    private Set<String> inputSupportedTypes;
-    private Set<String> outputSupportedTypes;
-    private Set<Operation> operations = Set.of(new ColumnOperation());
+    private List<String> inputSupportedTypes;
+    private List<String> outputSupportedTypes;
+    private List<ProviderOperation> operations;
 
-    public static Provider createWithAllValues(UUID id, String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
-        return new Provider(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
+    public static Provider createWithAllValues(UUID id, String name, String description, String url,
+                                               Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes,
+                                               Collection<ProviderOperation> operations) {
+        return new Provider(id, name, description, url, inputSupportedTypes, outputSupportedTypes, operations);
     }
 
-    public static Provider createWithoutId(String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
-        return new Provider(null, name, description, url, inputSupportedTypes, outputSupportedTypes);
+    public static Provider createWithoutId(String name, String description, String url,
+                                           Collection<String> inputSupportedTypes,
+                                           Collection<String> outputSupportedTypes,
+                                           Collection<ProviderOperation> operations) {
+        return new Provider(null, name, description, url, inputSupportedTypes, outputSupportedTypes, operations);
     }
 
     public static Provider createWithPartialValues(UUID id, String inputSupportedType, String outputSupportedType) {
-        return new Provider(id, Set.of(inputSupportedType), Set.of(outputSupportedType));
+        return new Provider(id, Collections.singletonList(inputSupportedType), Collections.singletonList(outputSupportedType));
     }
 
     public boolean isInputSupportedType(String inputType) {
@@ -32,19 +37,21 @@ public class Provider {
         return outputSupportedTypes.contains(outputType);
     }
 
-    private Provider(UUID id, Set<String> inputSupportedType, Set<String> outputSupportedType) {
+    private Provider(UUID id, List<String> inputSupportedType, List<String> outputSupportedType) {
         this.id = id;
         this.inputSupportedTypes = inputSupportedType;
         this.outputSupportedTypes = outputSupportedType;
     }
 
-    private Provider(UUID id, String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
+    private Provider(UUID id, String name, String description, String url, Collection<String> inputSupportedTypes,
+                     Collection<String> outputSupportedTypes, Collection<ProviderOperation> operations) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.url = url;
-        this.inputSupportedTypes = new HashSet<>(inputSupportedTypes);
-        this.outputSupportedTypes = new HashSet<>(outputSupportedTypes);
+        this.inputSupportedTypes = Objects.requireNonNull(List.copyOf(inputSupportedTypes));
+        this.outputSupportedTypes = Objects.requireNonNull(List.copyOf(outputSupportedTypes));
+        this.operations = Objects.requireNonNull(List.copyOf(operations));
     }
 
     public UUID getId() {
@@ -67,15 +74,15 @@ public class Provider {
         return description;
     }
 
-    public Set<String> getInputSupportedTypes() {
-        return new HashSet<>(inputSupportedTypes);
+    public List<String> getInputSupportedTypes() {
+        return inputSupportedTypes;
     }
 
-    public Set<String> getOutputSupportedTypes() {
-        return new HashSet<>(outputSupportedTypes);
+    public List<String> getOutputSupportedTypes() {
+        return outputSupportedTypes;
     }
 
-    public Set<Operation> getOperations() {
-        return new HashSet<>(operations);
+    public List<ProviderOperation> getOperations() {
+        return operations;
     }
 }

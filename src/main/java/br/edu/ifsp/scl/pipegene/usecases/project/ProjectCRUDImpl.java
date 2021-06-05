@@ -15,12 +15,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class ProjectServiceImpl implements ProjectService {
+public class ProjectCRUDImpl implements ProjectCRUD {
 
     private final ProjectRepository projectRepository;
     private final ObjectStorageService objectStorageService;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository, ObjectStorageService objectStorageService) {
+    public ProjectCRUDImpl(ProjectRepository projectRepository, ObjectStorageService objectStorageService) {
         this.projectRepository = projectRepository;
         this.objectStorageService = objectStorageService;
     }

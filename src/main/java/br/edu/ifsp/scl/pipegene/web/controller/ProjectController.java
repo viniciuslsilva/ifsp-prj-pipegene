@@ -1,7 +1,7 @@
 package br.edu.ifsp.scl.pipegene.web.controller;
 
 import br.edu.ifsp.scl.pipegene.domain.Project;
-import br.edu.ifsp.scl.pipegene.usecases.project.ProjectService;
+import br.edu.ifsp.scl.pipegene.usecases.project.ProjectCRUD;
 import br.edu.ifsp.scl.pipegene.web.model.project.ProjectResponse;
 import br.edu.ifsp.scl.pipegene.web.model.project.ProjectUpdateRequest;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 @RestController
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectCRUD projectCRUD;
 
-    public ProjectController(ProjectService projectService) {
-        this.projectService = projectService;
+    public ProjectController(ProjectCRUD projectCRUD) {
+        this.projectCRUD = projectCRUD;
     }
 
     @PostMapping("v1/projects")
@@ -27,14 +27,14 @@ public class ProjectController {
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("files") List<MultipartFile> files) {
-        Project project = projectService.createNewProject(name, description, files);
+        Project project = projectCRUD.createNewProject(name, description, files);
 
         return ResponseEntity.ok(ProjectResponse.createFromProject(project));
     }
 
     @GetMapping("v1/projects/")
     public ResponseEntity<List<ProjectResponse>> listAllProjects() {
-        List<Project> projects = projectService.findAllProjects();
+        List<Project> projects = projectCRUD.findAllProjects();
 
         return ResponseEntity.ok(
                 projects.stream()
@@ -45,7 +45,7 @@ public class ProjectController {
 
     @GetMapping("v1/projects/{projectId}")
     public ResponseEntity<ProjectResponse> findProjectById(@PathVariable UUID projectId) {
-        Project project = projectService.findProjectById(projectId);
+        Project project = projectCRUD.findProjectById(projectId);
 
         return ResponseEntity.ok(ProjectResponse.createFromProject(project));
     }
@@ -53,7 +53,7 @@ public class ProjectController {
     @PutMapping("v1/projects/{projectId}")
     public ResponseEntity<ProjectResponse> updateProjectById(@PathVariable UUID projectId,
                                                              @RequestBody @Valid ProjectUpdateRequest request) {
-        Project project = projectService.updateProjectById(projectId, request);
+        Project project = projectCRUD.updateProjectById(projectId, request);
 
         return ResponseEntity.ok(ProjectResponse.createFromProject(project));
     }

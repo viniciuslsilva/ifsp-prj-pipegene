@@ -1,6 +1,5 @@
 package br.edu.ifsp.scl.pipegene.external.client;
 
-import br.edu.ifsp.scl.pipegene.domain.Operation;
 import br.edu.ifsp.scl.pipegene.external.client.model.ProviderClientRequest;
 import br.edu.ifsp.scl.pipegene.external.client.model.ProviderResponse;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderClient;
@@ -42,8 +41,7 @@ public class ProviderClientImpl implements ProviderClient {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource(request.getFile()));
 
-        Operation operation = request.getOperation();
-        body.add(operation.getParamKey(), operation.getParams());
+        request.getParams().forEach(body::add);
 
         HttpEntity<MultiValueMap<String, Object>> req = new HttpEntity<>(body, headers);
 

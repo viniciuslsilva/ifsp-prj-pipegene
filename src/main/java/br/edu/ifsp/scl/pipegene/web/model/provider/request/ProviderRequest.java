@@ -4,6 +4,7 @@ import br.edu.ifsp.scl.pipegene.domain.Provider;
 
 import javax.validation.constraints.NotNull;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ProviderRequest {
 
@@ -17,22 +18,24 @@ public class ProviderRequest {
     //@URL
     private String url;
 
+    @NotNull
     private Set<String> inputSupportedTypes;
+
+    @NotNull
     private Set<String> outputSupportedTypes;
+
+    @NotNull
+    private Set<ProviderOperationDTO> operations;
 
     public ProviderRequest() {
     }
 
-    public ProviderRequest(String name, String description, String url, Set<String> inputSupportedTypes, Set<String> outputSupportedTypes) {
-        this.name = name;
-        this.description = description;
-        this.url = url;
-        this.inputSupportedTypes = inputSupportedTypes;
-        this.outputSupportedTypes = outputSupportedTypes;
-    }
-
     public Provider convertToProvider() {
-        return Provider.createWithoutId(name, description, url, inputSupportedTypes, outputSupportedTypes);
+        return Provider.createWithoutId(name, description, url, inputSupportedTypes, outputSupportedTypes,
+                operations.stream()
+                        .map(ProviderOperationDTO::convertToProviderOperation)
+                        .collect(Collectors.toList())
+        );
     }
 
     public String getName() {
@@ -73,5 +76,13 @@ public class ProviderRequest {
 
     public void setOutputSupportedTypes(Set<String> outputSupportedTypes) {
         this.outputSupportedTypes = outputSupportedTypes;
+    }
+
+    public Set<ProviderOperationDTO> getOperations() {
+        return operations;
+    }
+
+    public void setOperations(Set<ProviderOperationDTO> operations) {
+        this.operations = operations;
     }
 }

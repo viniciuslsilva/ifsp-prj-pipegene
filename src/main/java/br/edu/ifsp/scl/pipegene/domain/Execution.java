@@ -2,6 +2,7 @@ package br.edu.ifsp.scl.pipegene.domain;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,10 +15,10 @@ public class Execution {
     private URI executionResult;
 
     private Integer currentStep = 0;
-    private List<ExecutionStep> steps = new ArrayList<>();
+    private List<ExecutionStep> steps = Collections.emptyList();
 
     public void setExecutionSteps(List<ExecutionStep> steps) {
-        this.steps = steps;
+        this.steps.addAll(steps);
     }
 
     public ExecutionStep getFirstExecutionStep() {
@@ -36,12 +37,12 @@ public class Execution {
         return steps.get(currentStep).getStepId();
     }
 
-    public boolean hasNextExecution() {
+    public boolean hasNextExecutionStep() {
         return currentStep < steps.size() - 1;
     }
 
     public ExecutionStep getNextExecutionStep() {
-        if (hasNextExecution()) {
+        if (hasNextExecutionStep()) {
             ExecutionStep current = steps.get(currentStep);
 
             if (!current.getState().equals(ExecutionStepState.SUCCESS)) {
@@ -55,7 +56,7 @@ public class Execution {
     }
 
     public void finishExecution(URI executionResult) {
-        if (hasNextExecution()) {
+        if (hasNextExecutionStep()) {
             throw new IllegalStateException();
         }
         status = ExecutionStatusEnum.DONE;

@@ -1,8 +1,12 @@
 package br.edu.ifsp.scl.pipegene.external.persistence.entities;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
+import br.edu.ifsp.scl.pipegene.domain.ProviderOperation;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class ProviderEntity {
     private UUID id;
@@ -11,28 +15,33 @@ public class ProviderEntity {
     private String url;
     private Set<String> inputSupportedTypes;
     private Set<String> outputSupportedTypes;
+    private Set<ProviderOperation> operations;
 
 
-    private ProviderEntity(UUID id, String name, String description, String url, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
+    private ProviderEntity(UUID id, String name, String description, String url, Collection<String> inputSupportedTypes,
+                           Collection<String> outputSupportedTypes, Collection<ProviderOperation> operations) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.url = url;
         this.inputSupportedTypes = new HashSet<>(inputSupportedTypes);
         this.outputSupportedTypes = new HashSet<>(outputSupportedTypes);
+        this.operations = new HashSet<>(operations);
     }
 
-    public static ProviderEntity of(UUID id, String name, String description, String url, Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes) {
-        return new ProviderEntity(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
+    public static ProviderEntity of(UUID id, String name, String description, String url,
+                                    Collection<String> inputSupportedTypes, Collection<String> outputSupportedTypes,
+                                    Collection<ProviderOperation> operations) {
+        return new ProviderEntity(id, name, description, url, inputSupportedTypes, outputSupportedTypes, operations);
     }
 
     public static ProviderEntity createFromProviderWithoutId(Provider provider) {
         return new ProviderEntity(UUID.randomUUID(), provider.getName(), provider.getDescription(), provider.getUrl(),
-                provider.getInputSupportedTypes(), provider.getOutputSupportedTypes());
+                provider.getInputSupportedTypes(), provider.getOutputSupportedTypes(), provider.getOperations());
     }
 
     public Provider convertToProvider() {
-        return Provider.createWithAllValues(id, name, description, url, inputSupportedTypes, outputSupportedTypes);
+        return Provider.createWithAllValues(id, name, description, url, inputSupportedTypes, outputSupportedTypes, operations);
     }
 
     public UUID getId() {
@@ -81,5 +90,13 @@ public class ProviderEntity {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Set<ProviderOperation> getOperations() {
+        return operations;
+    }
+
+    public void setOperations(Set<ProviderOperation> operations) {
+        this.operations = operations;
     }
 }

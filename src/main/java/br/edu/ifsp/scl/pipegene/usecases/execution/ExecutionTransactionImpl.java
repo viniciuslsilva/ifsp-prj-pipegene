@@ -22,6 +22,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,7 +44,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
     }
 
     @Override
-    public void start(ExecutionQueueElement executionQueueElement) {
+    public void startExecution(ExecutionQueueElement executionQueueElement) {
         Execution execution = executionRepository
                 .findExecutionByExecutionId(executionQueueElement.getId())
                 .orElseThrow();
@@ -64,15 +65,16 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
 
         logger.info("Sending queue element " + executionQueueElement.getId() + " to provider: " + provider.getId());
 
-        callProviderClient(execution, executionStep.getOperation(), provider, file);
+        callProviderClient(execution, executionStep.getExecutionStepParams(), provider, file);
         logger.info("Update execution in database");
         executionRepository.updateExecution(execution);
     }
 
-    private List<ExecutionStep> mapToExecutionStep(List<ExecutionStepRequest> executionRequestFlowDetails) {
-        return executionRequestFlowDetails
+    private List<ExecutionStep> mapToExecutionStep(List<ExecutionStepRequest> executionStepRequest) {
+        return executionStepRequest
                 .stream()
-                .map(e -> ExecutionStep.of(e.getProviderId(), e.getInputType(), e.getOutputType(), ExecutionStepState.NOT_EXECUTED))
+                .map(e -> ExecutionStep.createGeneratingStepId(e.getProviderId(), e.getInputType(), e.getOutputType(),
+                        ExecutionStepState.NOT_EXECUTED, e.getParams()))
                 .collect(Collectors.toList());
     }
 
@@ -100,7 +102,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
 
         if (providerExecutionResultRequest.getStatus().equals(ProviderExecutionResultStatus.SUCCESS)) {
             execution.setCurrentExecutionStepState(ExecutionStepState.SUCCESS);
-            if (execution.hasNextExecution()) {
+            if (execution.hasNextExecutionStep()) {
                 applyNextExecution(execution, providerExecutionResultRequest);
             } else {
                 execution.finishExecution(providerExecutionResultRequest.getUri());
@@ -111,7 +113,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
 
     private void applyNextExecution(Execution execution, ProviderExecutionResultRequest providerExecutionResultRequest) {
         ExecutionStep executionStep = execution.getNextExecutionStep();
-        Provider nextProvider = providerRepository
+        Provider provider = providerRepository
                 .findProviderById(executionStep.getProviderId())
                 .orElseThrow();
 
@@ -124,8 +126,8 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
             Files.write(tempFile, file.getInputStream().readAllBytes());
             fileToSend = tempFile.toFile();
 
-            validateExecutionDetailsWithProviderFound(nextProvider, executionStep);
-            callProviderClient(execution, executionStep.getOperation(), nextProvider, fileToSend);
+            validateExecutionDetailsWithProviderFound(provider, executionStep);
+            callProviderClient(execution, executionStep.getExecutionStepParams(), provider, fileToSend);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -137,11 +139,11 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
         executionRepository.updateExecution(execution);
     }
 
-    private void callProviderClient(Execution execution, Operation operation, Provider provider, File file) {
+    private void callProviderClient(Execution execution, Map<String, Object> executionStepParams, Provider provider, File file) {
         try {
             ProviderClientRequest request = new ProviderClientRequest(
                     execution.getId(), execution.getStepIdFromCurrentExecutionStep(), provider.getUrl(), file,
-                    operation
+                    executionStepParams
             );
             providerClient.processRequest(request);
             execution.setCurrentExecutionStepState(ExecutionStepState.IN_PROGRESS);

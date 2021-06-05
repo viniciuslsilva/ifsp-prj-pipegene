@@ -19,13 +19,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class ExecutionServiceImpl implements ExecutionService {
+public class ExecutionCRUDImpl implements ExecutionCRUD {
 
     private final ExecutionRepository executionRepository;
     private final ProjectRepository projectRepository;
     private final QueueService queueService;
 
-    public ExecutionServiceImpl(ExecutionRepository executionRepository, ProjectRepository projectRepository, QueueService queueService) {
+    public ExecutionCRUDImpl(ExecutionRepository executionRepository, ProjectRepository projectRepository, QueueService queueService) {
         this.executionRepository = executionRepository;
         this.projectRepository = projectRepository;
         this.queueService = queueService;
