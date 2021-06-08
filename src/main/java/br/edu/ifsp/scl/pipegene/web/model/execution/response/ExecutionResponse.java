@@ -3,14 +3,12 @@ package br.edu.ifsp.scl.pipegene.web.model.execution.response;
 import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.web.model.DatasetDTO;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExecutionResponse {
     private UUID id;
     private Project project;
