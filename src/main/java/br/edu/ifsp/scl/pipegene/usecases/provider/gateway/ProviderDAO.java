@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-public interface ProviderRepository {
+public interface ProviderDAO {
 
     Optional<Provider> findProviderById(UUID id);
 

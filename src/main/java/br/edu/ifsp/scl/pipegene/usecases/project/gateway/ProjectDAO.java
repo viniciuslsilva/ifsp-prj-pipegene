@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ProjectRepository {
+public interface ProjectDAO {
 
     Project saveNewProject(String name, String description, List<Dataset> datasets);
 

@@ -1,10 +1,15 @@
 server:
   port: 8080
 
+security:
+  jwt:
+    secret-key: 'securesecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecure'
+    token-prefix: 'Bearer '
+    token-expiration-after-days: 14
 
 execution:
   batch-size: 1
 
 cron:
-  expression: '0/10 * * ? * *' #Every 10 seconds
+  expression: '0/20 * * ? * *' #Every 10 seconds
 #  expression: '0 */10 * ? * *' #Every 10 minutes

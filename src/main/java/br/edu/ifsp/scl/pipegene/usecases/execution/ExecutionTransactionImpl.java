@@ -2,11 +2,11 @@ package br.edu.ifsp.scl.pipegene.usecases.execution;
 
 import br.edu.ifsp.scl.pipegene.domain.*;
 import br.edu.ifsp.scl.pipegene.external.client.model.ProviderClientRequest;
-import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionRepository;
+import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionDAO;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.ExecutionQueueElement;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderClient;
-import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderRepository;
+import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderDAO;
 import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionStepRequest;
 import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultRequest;
 import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultStatus;
@@ -31,21 +31,21 @@ import java.util.stream.Collectors;
 public class ExecutionTransactionImpl implements ExecutionTransaction {
 
     private final Logger logger = LoggerFactory.getLogger(ExecutionTransactionImpl.class);
-    private final ExecutionRepository executionRepository;
-    private final ProviderRepository providerRepository;
+    private final ExecutionDAO executionDAO;
+    private final ProviderDAO providerDAO;
     private final ProviderClient providerClient;
     private final ObjectStorageService storageService;
 
-    public ExecutionTransactionImpl(ExecutionRepository executionRepository, ProviderRepository providerRepository, ProviderClient providerClient, ObjectStorageService storageService) {
-        this.executionRepository = executionRepository;
-        this.providerRepository = providerRepository;
+    public ExecutionTransactionImpl(ExecutionDAO executionDAO, ProviderDAO providerDAO, ProviderClient providerClient, ObjectStorageService storageService) {
+        this.executionDAO = executionDAO;
+        this.providerDAO = providerDAO;
         this.providerClient = providerClient;
         this.storageService = storageService;
     }
 
     @Override
     public void startExecution(ExecutionQueueElement executionQueueElement) {
-        Execution execution = executionRepository
+        Execution execution = executionDAO
                 .findExecutionByExecutionId(executionQueueElement.getId())
                 .orElseThrow();
 
@@ -55,7 +55,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
         logger.info(execution.toString());
 
         ExecutionStep executionStep = execution.getFirstExecutionStep();
-        Provider provider = providerRepository
+        Provider provider = providerDAO
                 .findProviderById(executionStep.getProviderId())
                 .orElseThrow();
 
@@ -67,7 +67,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
 
         callProviderClient(execution, executionStep.getExecutionStepParams(), provider, file);
         logger.info("Update execution in database");
-        executionRepository.updateExecution(execution);
+        executionDAO.updateExecution(execution);
     }
 
     private List<ExecutionStep> mapToExecutionStep(List<ExecutionStepRequest> executionStepRequest) {
@@ -80,7 +80,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
 
     @Override
     public void validateNotificationFromProvider(UUID providerId, UUID executionId, UUID stepId) {
-        Execution execution = executionRepository
+        Execution execution = executionDAO
                 .findExecutionByExecutionIdAndCurrentExecutionStepId(executionId, stepId)
                 .orElseThrow();
 
@@ -92,7 +92,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
     @Async
     @Override
     public void processAsyncExecutionResult(UUID providerId, UUID executionId, UUID stepId, ProviderExecutionResultRequest providerExecutionResultRequest) {
-        Execution execution = executionRepository
+        Execution execution = executionDAO
                 .findExecutionByExecutionIdAndCurrentExecutionStepId(executionId, stepId)
                 .orElseThrow();
 
@@ -106,14 +106,14 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
                 applyNextExecution(execution, providerExecutionResultRequest);
             } else {
                 execution.finishExecution(providerExecutionResultRequest.getUri());
-                executionRepository.updateExecution(execution);
+                executionDAO.updateExecution(execution);
             }
         }
     }
 
     private void applyNextExecution(Execution execution, ProviderExecutionResultRequest providerExecutionResultRequest) {
         ExecutionStep executionStep = execution.getNextExecutionStep();
-        Provider provider = providerRepository
+        Provider provider = providerDAO
                 .findProviderById(executionStep.getProviderId())
                 .orElseThrow();
 
@@ -136,7 +136,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
             }
         }
 
-        executionRepository.updateExecution(execution);
+        executionDAO.updateExecution(execution);
     }
 
     private void callProviderClient(Execution execution, Map<String, Object> executionStepParams, Provider provider, File file) {

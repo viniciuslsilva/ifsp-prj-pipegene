@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-public interface ExecutionRepository {
+public interface ExecutionDAO {
 
     Boolean bathProviderInfoIsValid(List<Provider> providers);
 

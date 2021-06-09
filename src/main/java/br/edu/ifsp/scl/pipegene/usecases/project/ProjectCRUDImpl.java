@@ -3,7 +3,7 @@ package br.edu.ifsp.scl.pipegene.usecases.project;
 import br.edu.ifsp.scl.pipegene.domain.Dataset;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
-import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
+import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectDAO;
 import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
 import br.edu.ifsp.scl.pipegene.web.model.project.ProjectUpdateRequest;
 import org.springframework.stereotype.Service;
@@ -17,11 +17,11 @@ import java.util.stream.Collectors;
 @Service
 public class ProjectCRUDImpl implements ProjectCRUD {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectDAO projectDAO;
     private final ObjectStorageService objectStorageService;
 
-    public ProjectCRUDImpl(ProjectRepository projectRepository, ObjectStorageService objectStorageService) {
-        this.projectRepository = projectRepository;
+    public ProjectCRUDImpl(ProjectDAO projectDAO, ObjectStorageService objectStorageService) {
+        this.projectDAO = projectDAO;
         this.objectStorageService = objectStorageService;
     }
 
@@ -29,12 +29,12 @@ public class ProjectCRUDImpl implements ProjectCRUD {
     public Project createNewProject(String name, String description, List<MultipartFile> files) {
         List<Dataset> datasets = files.stream().map(objectStorageService::putObject).collect(Collectors.toList());
 
-        return projectRepository.saveNewProject(name, description, datasets);
+        return projectDAO.saveNewProject(name, description, datasets);
     }
 
     @Override
     public Project findProjectById(UUID projectId) {
-        Optional<Project> optional = projectRepository.findProjectById(projectId);
+        Optional<Project> optional = projectDAO.findProjectById(projectId);
 
         if (optional.isEmpty()) {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
@@ -45,19 +45,19 @@ public class ProjectCRUDImpl implements ProjectCRUD {
 
     @Override
     public Project updateProjectById(UUID projectId, ProjectUpdateRequest request) {
-        Optional<Project> optional = projectRepository.findProjectById(projectId);
+        Optional<Project> optional = projectDAO.findProjectById(projectId);
 
         if (optional.isEmpty()) {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
-        return projectRepository.updateProject(
+        return projectDAO.updateProject(
                 optional.get().getUpdatedInstance(request)
         );
     }
 
     @Override
     public List<Project> findAllProjects() {
-        return projectRepository.findAllProjects();
+        return projectDAO.findAllProjects();
     }
 }

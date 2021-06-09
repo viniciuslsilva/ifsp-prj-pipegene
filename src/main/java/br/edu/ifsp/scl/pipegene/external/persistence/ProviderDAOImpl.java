@@ -2,7 +2,7 @@ package br.edu.ifsp.scl.pipegene.external.persistence;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProviderEntity;
-import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderRepository;
+import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderDAO;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,11 +11,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
-public class ProviderRepositoryImpl implements ProviderRepository {
+public class ProviderDAOImpl implements ProviderDAO {
 
     private final FakeDatabase fakeDatabase;
 
-    public ProviderRepositoryImpl(FakeDatabase fakeDatabase) {
+    public ProviderDAOImpl(FakeDatabase fakeDatabase) {
         this.fakeDatabase = fakeDatabase;
     }
 

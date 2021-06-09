@@ -4,8 +4,8 @@ import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ExecutionEntity;
-import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionRepository;
-import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
+import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionDAO;
+import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectDAO;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,14 +13,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class ExecutionRepositoryImpl implements ExecutionRepository {
+public class ExecutionDAOImpl implements ExecutionDAO {
 
     private final FakeDatabase fakeDatabase;
-    private final ProjectRepository projectRepository;
+    private final ProjectDAO projectDAO;
 
-    public ExecutionRepositoryImpl(FakeDatabase fakeDatabase, ProjectRepository projectRepository) {
+    public ExecutionDAOImpl(FakeDatabase fakeDatabase, ProjectDAO projectDAO) {
         this.fakeDatabase = fakeDatabase;
-        this.projectRepository = projectRepository;
+        this.projectDAO = projectDAO;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     @Override
     public Optional<Execution> findExecutionByProjectIdAndExecutionId(UUID projectId, UUID executionId) {
         if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
-            Project project = projectRepository.findProjectById(projectId).orElseThrow();
+            Project project = projectDAO.findProjectById(projectId).orElseThrow();
             return Optional.of(fakeDatabase.EXECUTION_STATUS_MAP.get(executionId).convertToExecution(project));
         }
         return Optional.empty();
@@ -44,7 +44,7 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
         if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
             return Optional.of(fakeDatabase.EXECUTION_STATUS_MAP.get(executionId))
                     .map(execution -> execution.convertToExecution(
-                            projectRepository.findProjectById(execution.getProjectId())
+                            projectDAO.findProjectById(execution.getProjectId())
                                     .orElseThrow()
                             )
                     );
@@ -71,7 +71,7 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     public Optional<Execution> findExecutionByExecutionIdAndCurrentExecutionStepId(UUID executionId, UUID stepId) {
         if (fakeDatabase.EXECUTION_STATUS_MAP.containsKey(executionId)) {
             ExecutionEntity entity = fakeDatabase.EXECUTION_STATUS_MAP.get(executionId);
-            Project project = projectRepository.findProjectById(entity.getProjectId()).orElseThrow();
+            Project project = projectDAO.findProjectById(entity.getProjectId()).orElseThrow();
             Execution execution = entity.convertToExecution(project);
 
             if (execution.getStepIdFromCurrentExecutionStep().equals(stepId)) {

@@ -4,7 +4,7 @@ import br.edu.ifsp.scl.pipegene.domain.Dataset;
 import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProjectEntity;
-import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectRepository;
+import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectDAO;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,11 +13,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
-public class ProjectRepositoryImpl implements ProjectRepository {
+public class ProjectDAOImpl implements ProjectDAO {
 
     private final FakeDatabase fakeDatabase;
 
-    public ProjectRepositoryImpl(FakeDatabase fakeDatabase) {
+    public ProjectDAOImpl(FakeDatabase fakeDatabase) {
         this.fakeDatabase = fakeDatabase;
     }
 
