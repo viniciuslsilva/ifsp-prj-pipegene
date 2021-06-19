@@ -9,6 +9,9 @@ public class ProviderOperation {
     private String description;
     private List<ProviderOperationParam> params;
 
+    public ProviderOperation() {
+    }
+
     public ProviderOperation(String type, String description, Collection<ProviderOperationParam> params) {
         this.type = type;
         this.description = description;

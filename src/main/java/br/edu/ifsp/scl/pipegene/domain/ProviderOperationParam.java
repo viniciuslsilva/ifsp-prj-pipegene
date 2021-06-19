@@ -7,6 +7,9 @@ public class ProviderOperationParam {
     private String key;
     private Object example;
 
+    public ProviderOperationParam() {
+    }
+
     public ProviderOperationParam(String type, String option, String key, Object example) {
         this.type = type;
         this.option = option;

@@ -1,27 +1,21 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Execution {
     private UUID id;
-    private Project project;
+    private Pipeline pipeline;
     private Dataset dataset;
+    private String description;
     private ExecutionStatusEnum status;
+    private List<ExecutionStep> steps;
 
     private URI executionResult;
-
     private Integer currentStep = 0;
-    private List<ExecutionStep> steps = Collections.emptyList();
 
-    public void setExecutionSteps(List<ExecutionStep> steps) {
-        this.steps.addAll(steps);
-    }
-
-    public ExecutionStep getFirstExecutionStep() {
+    public ExecutionStep getFirstStep() {
         if (currentStep > 0) {
             return null; // TODO add exception
         }
@@ -29,20 +23,20 @@ public class Execution {
         return steps.get(0);
     }
 
-    public UUID getProviderIdFromCurrentExecutionStep() {
-        return steps.get(currentStep).getProviderId();
+    public UUID getProviderIdFromCurrentStep() {
+        return steps.get(currentStep).getExecutionId();
     }
 
-    public UUID getStepIdFromCurrentExecutionStep() {
-        return steps.get(currentStep).getStepId();
+    public UUID getStepIdFromCurrentStep() {
+        return steps.get(currentStep).getId();
     }
 
-    public boolean hasNextExecutionStep() {
+    public boolean hasNextStep() {
         return currentStep < steps.size() - 1;
     }
 
-    public ExecutionStep getNextExecutionStep() {
-        if (hasNextExecutionStep()) {
+    public ExecutionStep getNextStep() {
+        if (hasNextStep()) {
             ExecutionStep current = steps.get(currentStep);
 
             if (!current.getState().equals(ExecutionStepState.SUCCESS)) {
@@ -56,7 +50,7 @@ public class Execution {
     }
 
     public void finishExecution(URI executionResult) {
-        if (hasNextExecutionStep()) {
+        if (hasNextStep()) {
             throw new IllegalStateException();
         }
         status = ExecutionStatusEnum.DONE;
@@ -67,39 +61,62 @@ public class Execution {
         steps.get(currentStep).setState(state);
     }
 
-    private Execution(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status) {
+
+    public Execution(UUID id, Pipeline pipeline, Dataset dataset, String description, List<ExecutionStep> steps) {
         this.id = id;
-        this.project = project;
+        this.pipeline = pipeline;
         this.dataset = dataset;
-        this.status = status;
+        this.description = description;
+        this.steps = steps;
     }
 
-    private Execution(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status, Integer currentStep, List<ExecutionStep> steps, URI executionResult) {
+    public static Execution createWithWaitingStatus(UUID id, Pipeline pipeline, Dataset dataset, String description) {
+        List<ExecutionStep> executionSteps = pipeline.getSteps().stream()
+                .map(p -> ExecutionStep.createFromPipelineStep(p, id))
+                .collect(Collectors.toList());
+
+        return new Execution(id, pipeline, dataset, description, ExecutionStatusEnum.WAITING, executionSteps);
+    }
+
+    private Execution(UUID id, Pipeline pipeline, Dataset dataset, String description, ExecutionStatusEnum status,
+                      List<ExecutionStep> steps) {
         this.id = id;
-        this.project = project;
+        this.pipeline = pipeline;
         this.dataset = dataset;
+        this.description = description;
+        this.status = status;
+        this.steps = steps;
+    }
+
+
+    public static Execution createWithoutSteps(UUID id, Pipeline pipeline, Dataset dataset, String description,
+                                               ExecutionStatusEnum status, Integer currentStep, URI executionResult) {
+        return new Execution(id, pipeline, dataset, description, status, currentStep, new ArrayList<>(), executionResult);
+    }
+
+    private Execution(UUID id, Pipeline pipeline, Dataset dataset, String description, ExecutionStatusEnum status,
+                      Integer currentStep, List<ExecutionStep> steps, URI executionResult) {
+        this.id = id;
+        this.pipeline = pipeline;
+        this.dataset = dataset;
+        this.description = description;
         this.status = status;
         this.currentStep = currentStep;
         this.steps = steps;
         this.executionResult = executionResult;
     }
 
-
-    public static Execution createWithPartialValues(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status) {
-        return new Execution(id, project, dataset, status);
-    }
-
-    public static Execution createWithAllValues(UUID id, Project project, Dataset dataset, ExecutionStatusEnum status,
-                                                Integer currentStep, List<ExecutionStep> steps, URI executionResult) {
-        return new Execution(id, project, dataset, status, currentStep, steps, executionResult);
-    }
-
     public UUID getId() {
         return id;
     }
 
-    public Project getProject() {
-        return project;
+    public Pipeline getPipeline() {
+        return pipeline;
+    }
+
+
+    public String getDescription() {
+        return description;
     }
 
     public ExecutionStatusEnum getStatus() {
@@ -112,6 +129,10 @@ public class Execution {
 
     public List<ExecutionStep> getSteps() {
         return new ArrayList<>(steps);
+    }
+
+    public void setSteps(List<ExecutionStep> steps) {
+        this.steps.addAll(steps);
     }
 
     public Dataset getDataset() {

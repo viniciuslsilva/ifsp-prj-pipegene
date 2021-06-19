@@ -10,9 +10,9 @@ import java.util.UUID;
 
 public interface ExecutionDAO {
 
-    Boolean bathProviderInfoIsValid(List<Provider> providers);
-
     Optional<Execution> findExecutionByProjectIdAndExecutionId(UUID projectId, UUID executionId);
+
+    Boolean existsExecutionIdAndStepIdForProvider(UUID executionId, UUID stepId, UUID providerId);
 
     Optional<Execution> findExecutionByExecutionId(UUID executionId);
 
@@ -20,5 +20,5 @@ public interface ExecutionDAO {
 
     void updateExecution(Execution execution);
 
-    Optional<Execution> findExecutionByExecutionIdAndCurrentExecutionStepId(UUID executionId, UUID stepId);
+    List<Execution> findAllExecutionsByProjectId(UUID projectId);
 }

@@ -1,47 +1,65 @@
 package br.edu.ifsp.scl.pipegene.domain;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 public class ExecutionStep {
 
-    private UUID stepId;
-    private UUID providerId;
+    private UUID id;
+    private UUID executionId;
+    private Provider provider;
     private String inputType;
     private String outputType;
     private ExecutionStepState state;
-    private Map<String, Object> executionStepParams;
+    private Map<String, Object> params;
+    private Integer stepNumber;
 
+    private Pipeline pipeline;
 
-    private ExecutionStep(UUID stepId, UUID providerId, String inputType, String outputType, ExecutionStepState state,
-                          Map<String, Object> executionStepParams) {
-        this.stepId = stepId;
-        this.providerId = providerId;
+    private ExecutionStep(UUID id, UUID executionId, Provider provider, String inputType, String outputType, ExecutionStepState state,
+                          Map<String, Object> params, Integer stepNumber) {
+        this.id = id;
+        this.provider = provider;
+        this.executionId = executionId;
         this.inputType = inputType;
         this.outputType = outputType;
         this.state = state;
-        this.executionStepParams = Collections.unmodifiableMap(executionStepParams);
+        this.params = Collections.unmodifiableMap(params);
+        this.stepNumber = stepNumber;
     }
 
-    public static ExecutionStep of(UUID stepId, UUID providerId, String inputType, String outputType,
-                                   ExecutionStepState state, Map<String, Object> executionStepParams) {
-        return new ExecutionStep(stepId, providerId, inputType, outputType, state, executionStepParams);
+    public static ExecutionStep createFromPipelineStep(PipelineStep p, UUID executionId) {
+        return new ExecutionStep(
+                UUID.randomUUID(),
+                executionId,
+                p.getProvider(),
+                p.getInputType(),
+                p.getOutputType(),
+                ExecutionStepState.NOT_EXECUTED,
+                p.getParams(),
+                p.getStepNumber()
+        );
     }
 
-    public static ExecutionStep createGeneratingStepId(UUID providerId, String inputType, String outputType, ExecutionStepState state,
-                                                       Map<String, Object> executionStepParams) {
-        return new ExecutionStep(UUID.randomUUID(), providerId, inputType, outputType, state,
-                Objects.requireNonNull(executionStepParams));
+    public static ExecutionStep of(UUID id, UUID executionId, Provider providerId, String inputType, String outputType,
+                                   ExecutionStepState state, Map<String, Object> params, Integer stepNumber) {
+        return new ExecutionStep(id, executionId, providerId, inputType, outputType, state, params, stepNumber);
     }
 
-    public UUID getStepId() {
-        return stepId;
+    public UUID getId() {
+        return id;
     }
 
-    public UUID getProviderId() {
-        return providerId;
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public UUID getExecutionId() {
+        return executionId;
     }
 
     public String getInputType() {
@@ -60,7 +78,20 @@ public class ExecutionStep {
         this.state = state;
     }
 
-    public Map<String, Object> getExecutionStepParams() {
-        return executionStepParams;
+    public Map<String, Object> getParams() {
+        return params;
     }
+
+    public Pipeline getPipeline() {
+        return pipeline;
+    }
+
+    public Integer getStepNumber() {
+        return stepNumber;
+    }
+
+    public void setPipeline(Pipeline pipeline) {
+        this.pipeline = pipeline;
+    }
+
 }

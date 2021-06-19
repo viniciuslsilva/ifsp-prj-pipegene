@@ -19,6 +19,4 @@ public interface ProjectDAO {
     List<Project> findAllProjects();
 
     Boolean projectExists(UUID id);
-
-    List<Execution> findAllExecutionsByProjectId(UUID projectId);
 }

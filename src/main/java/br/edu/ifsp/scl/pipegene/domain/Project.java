@@ -7,12 +7,23 @@ import java.util.*;
 public class Project {
 
     private UUID id;
-    private List<Dataset> datasets;
     private String name;
     private String description;
+    private List<Dataset> datasets;
+    private List<Pipeline> pipelines;
+    private UUID ownerId;
 
     public boolean hasDataset(UUID datasetId) {
         return datasets.stream().anyMatch(d -> d.getId().equals(datasetId));
+    }
+
+    public boolean hasPipeline(UUID pipelineId) {
+        return pipelines.stream().anyMatch(p -> p.getId().equals(pipelineId));
+    }
+
+    public Pipeline findPipelineById(UUID pipelineId) {
+        return pipelines.stream()
+                .filter(p -> p.getId().equals(pipelineId)).findFirst().orElseThrow();
     }
 
     public Dataset findDatasetById(UUID datasetId) {
@@ -20,16 +31,36 @@ public class Project {
                 .filter(d -> d.getId().equals(datasetId)).findFirst().orElseThrow();
     }
 
-    private Project(UUID id, List<Dataset> datasets, String name, String description) {
+    public void addDataset(Dataset dataset) {
+        this.datasets.add(dataset);
+    }
+
+    public void addPipeline(List<Pipeline> pipelines) {
+        this.pipelines.addAll(pipelines);
+    }
+
+    private Project(UUID id, List<Dataset> datasets, String name, String description, List<Pipeline> pipelines, UUID ownerId) {
         this.id = id;
         this.datasets = datasets;
         this.name = name;
         this.description = description;
+        this.pipelines = pipelines;
+        this.ownerId = ownerId;
     }
 
-    public static Project of(UUID id, List<Dataset> datasets, String name, String description) {
-        List<Dataset> datasetList = Objects.isNull(datasets) ? Collections.emptyList() : new ArrayList<>(datasets);
-        return new Project(id, datasetList, name, description);
+    public static Project of(UUID id, List<Dataset> datasets, String name, String description, List<Pipeline> pipelines,
+                             UUID ownerId) {
+        List<Dataset> datasetList = Objects.isNull(datasets) ? new ArrayList<>() : new ArrayList<>(datasets);
+        List<Pipeline> pipelineList = Objects.isNull(pipelines) ? new ArrayList<>() : new ArrayList<>(pipelines);
+        return new Project(id, datasetList, name, description, pipelineList, ownerId);
+    }
+
+    private Project(UUID id) {
+        this.id = id;
+    }
+
+    public static Project createWithOnlyId(UUID id) {
+        return new Project(id);
     }
 
     public UUID getId() {
@@ -38,6 +69,10 @@ public class Project {
 
     public List<Dataset> getDatasets() {
         return new ArrayList<>(datasets);
+    }
+
+    public List<Pipeline> getPipelines() {
+        return new ArrayList<>(pipelines);
     }
 
     public String getName() {
@@ -56,7 +91,13 @@ public class Project {
                 id,
                 datasets,
                 newName,
-                newDescription
+                newDescription,
+                pipelines,
+                ownerId
         );
+    }
+
+    public UUID getOwnerId() {
+        return ownerId;
     }
 }

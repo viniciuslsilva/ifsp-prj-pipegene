@@ -14,11 +14,6 @@ public class ProjectEntity {
     private String name;
     private String description;
 
-    public static ProjectEntity createNewEntity(List<Dataset> datasets, String name, String description) {
-        List<DatasetEntity> datasetIds= datasets.stream().map(DatasetEntity::createFromDataset).collect(Collectors.toList());
-        return new ProjectEntity(UUID.randomUUID(), datasetIds, name, description);
-    }
-
     public static ProjectEntity createEntityInstance(UUID id, List<Dataset> datasets, String name, String description) {
         List<DatasetEntity> datasetIds= datasets.stream().map(DatasetEntity::createFromDataset).collect(Collectors.toList());
         return new ProjectEntity(id, datasetIds, name, description);
@@ -27,13 +22,6 @@ public class ProjectEntity {
     public static ProjectEntity createEntityInstance(Project project) {
         List<DatasetEntity> datasetIds= project.getDatasets().stream().map(DatasetEntity::createFromDataset).collect(Collectors.toList());
         return new ProjectEntity(project.getId(), datasetIds, project.getName(), project.getDescription());
-    }
-
-
-    public Project convertToProject() {
-        return Project.of(id, datasets.stream()
-                .map(DatasetEntity::convertToDataset)
-                .collect(Collectors.toList()), name, description);
     }
 
     private ProjectEntity(UUID id, List<DatasetEntity> datasets, String name, String description) {
@@ -51,11 +39,11 @@ public class ProjectEntity {
         this.id = id;
     }
 
-    public List<DatasetEntity> getDatasetUrl() {
+    public List<DatasetEntity> getDatasets() {
         return datasets;
     }
 
-    public void setDatasetUrl(List<DatasetEntity> datasets) {
+    public void setDataset(List<DatasetEntity> datasets) {
         this.datasets = datasets;
     }
 

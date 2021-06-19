@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@RequestMapping("/api/v1/projects")
 @RestController
 public class ProjectController {
 
@@ -22,7 +23,7 @@ public class ProjectController {
         this.projectCRUD = projectCRUD;
     }
 
-    @PostMapping("v1/projects")
+    @PostMapping
     public ResponseEntity<ProjectResponse> createNewProject(
             @RequestParam("name") String name,
             @RequestParam("description") String description,
@@ -32,7 +33,7 @@ public class ProjectController {
         return ResponseEntity.ok(ProjectResponse.createFromProject(project));
     }
 
-    @GetMapping("v1/projects/")
+    @GetMapping
     public ResponseEntity<List<ProjectResponse>> listAllProjects() {
         List<Project> projects = projectCRUD.findAllProjects();
 
@@ -43,14 +44,14 @@ public class ProjectController {
         );
     }
 
-    @GetMapping("v1/projects/{projectId}")
+    @GetMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> findProjectById(@PathVariable UUID projectId) {
         Project project = projectCRUD.findProjectById(projectId);
 
         return ResponseEntity.ok(ProjectResponse.createFromProject(project));
     }
 
-    @PutMapping("v1/projects/{projectId}")
+    @PutMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> updateProjectById(@PathVariable UUID projectId,
                                                              @RequestBody @Valid ProjectUpdateRequest request) {
         Project project = projectCRUD.updateProjectById(projectId, request);

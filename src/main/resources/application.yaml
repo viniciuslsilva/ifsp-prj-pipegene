@@ -8,8 +8,206 @@ security:
     token-expiration-after-days: 14
 
 execution:
-  batch-size: 1
+  batch-size: 0
 
 cron:
   expression: '0/20 * * ? * *' #Every 10 seconds
 #  expression: '0 */10 * ? * *' #Every 10 minutes
+
+spring:
+  application:
+    name: ifood-service-search
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pipegine?prepareThreshold=0
+    username: pipegine-app
+    password: pipegine-app
+    driver-class-name: org.postgresql.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    platform: postgresql
+    testWhileIdle: true
+    validationQuery: SELECT 1
+    hikari:
+      connectionTimeout: 5000
+      maximumPoolSize: 10
+      max-lifetime: 600000
+
+
+queries:
+  sql:
+    project-dao:
+      insert:
+        project: >
+          INSERT INTO pipegine_platform.project(id, name, description, owner_id) VALUES(?, ?, ?, ?)
+        dataset: >
+          INSERT INTO pipegine_platform.dataset(id, filename, project_id) VALUES(?, ?, ?)
+
+      select:
+        project-by-id: >
+          SELECT p.id,
+            p.name,
+            p.description,
+            p.owner_id
+          FROM pipegine_platform.project p WHERE p.id=?
+
+
+        project-datasets: >
+          SELECT d.id, d.filename FROM pipegine_platform.dataset d WHERE d.project_id=?
+
+        project-all: >
+          SELECT * FROM pipegine_platform.project
+      exists:
+        project-id: >
+          SELECT EXISTS(SELECT 1 FROM pipegine_platform.project p WHERE p.id=?)
+
+      update:
+        project: >
+          UPDATE pipegine_platform.project SET name=?, description=? WHERE id=?
+
+    pipeline-dao:
+      insert:
+        pipeline: >
+          INSERT INTO pipegine_platform.pipeline(id, project_id, description) VALUES(?, ?, ?)
+        pipeline-step: >
+          INSERT INTO pipegine_platform.pipeline_step(step_id, pipeline_id, provider_id, input_type, output_type,
+            params, step_number) VALUES(?, ?, ?, ?, ?, (to_json(?::jsonb)), ?)
+
+      select:
+        pipeline-all: >
+          SELECT
+            p.id pipeline_id,
+            p.description pipeline_description,
+
+            ps.step_id pipeline_step_id,
+            ps.provider_id pipeline_step_provider_id,
+            ps.input_type pipeline_step_input_type,
+            ps.output_type pipeline_step_output_type,
+            ps.params pipeline_step_params,
+            ps.step_number pipeline_step_number
+
+          FROM pipegine_platform.pipeline p
+            INNER JOIN pipegine_platform.pipeline_step ps ON ps.pipeline_id=p.id
+          WHERE p.project_id=?
+
+        pipelines-by-project-id: >
+          SELECT p.id, p.description FROM pipegine_platform.pipeline p WHERE p.project_id=?
+
+        pipeline-by-id: >
+          SELECT p.id, p.description FROM pipegine_platform.pipeline p WHERE p.id=?
+
+        pipeline-steps-by-pipeline-id: >
+          SELECT * FROM pipegine_platform.pipeline_step WHERE pipeline_id=?;
+
+        pipeline-steps-by-pipeline-ids: >
+          SELECT
+            ps.*,
+            p.name provider_name,
+            p.description provider_description
+          FROM pipegine_platform.pipeline_step ps
+            INNER JOIN pipegine_platform.provider p ON p.id=ps.provider_id
+          WHERE ps.pipeline_id=ANY(array[?]::uuid[])
+    provider-dao:
+      insert:
+        provider: >
+          INSERT INTO pipegine_platform.provider(id, name, description, url, input_supported_types,
+            output_supported_types, operations, owner_id) VALUES(?, ?, ?, ?, ?, ?, (to_json(?::jsonb)), ?)
+
+      select:
+        provider-by-id: >
+          SELECT * FROM pipegine_platform.provider p WHERE p.id=?
+
+        provider-all: >
+          SELECT * FROM pipegine_platform.provider
+
+    execution-dao:
+      insert:
+        execution: >
+          INSERT INTO pipegine_platform.execution(id, pipeline_id, dataset_id, description, current_step, status)
+            VALUES(?, ?, ?, ?, ?, ?::execution_status)
+
+        execution-steps: >
+            INSERT INTO pipegine_platform.execution_step(id, execution_id, provider_id, input_type, output_type, state,
+              params, step_number) VALUES(?, ?, ?, ?, ?, ?, (to_json(?::jsonb)), ?)
+      select:
+        execution-by-id: >
+          SELECT
+            e.id,
+            e.description,
+            e.result,
+            e.current_step,
+            e.status,
+            p.id pipeline_id,
+            p.description pipeline_description,
+            d.id dataset_id,
+            d.filename dataset_filename
+          FROM pipegine_platform.execution e
+            INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
+            INNER JOIN pipegine_platform.dataset d ON d.id=e.dataset_id
+          WHERE e.id=?
+
+        executions-by-project-id: >
+          SELECT
+            e.id,
+            e.description,
+            e.result,
+            e.current_step,
+            e.status,
+            p.id pipeline_id,
+            p.description pipeline_description,
+            d.id dataset_id,
+            d.filename dataset_filename
+          FROM pipegine_platform.execution e
+            INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
+            INNER JOIN pipegine_platform.project pr ON pr.id=p.project_id
+            INNER JOIN pipegine_platform.dataset d ON d.id=e.dataset_id
+          WHERE pr.id=? AND d.project_id=pr.id
+
+        execution-steps-by-execution-id:
+          SELECT
+            e.*,
+            p.name provider_name,
+            p.description provider_description
+          FROM pipegine_platform.execution_step e
+            INNER JOIN pipegine_platform.provider p ON p.id=e.provider_id
+          WHERE e.execution_id=?
+
+        execution-steps-by-execution-ids:
+          SELECT
+            e.*,
+            p.name provider_name,
+            p.description provider_description
+          FROM pipegine_platform.execution_step e
+            INNER JOIN pipegine_platform.provider p ON p.id=e.provider_id
+          WHERE e.execution_id=ANY(?)
+
+        execution-by-id-and-project-id: >
+          SELECT
+            e.description execution_description,
+            e.status execution_status,
+            e.current_step execution_current_step,
+            p.id pipeline_id,
+            p.description pipeline_description,
+            d.id dataset_id,
+            d.filename dataset_filename
+          FROM pipegine_platform.execution e
+            INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
+            INNER JOIN pipegine_platform.project pr ON pr.id=p.project_id
+            INNER JOIN pipegine_platform.dataset d ON d.id=e.dataset_id
+          WHERE e.id=? AND pr.id=? AND d.project_id=pr.id
+
+
+      update:
+        execution-by-id: >
+            UPDATE pipegine_platform.execution SET description=?, current_step=?, status=? WHERE id=?
+
+      exists:
+        execution-id-step-id-provider-id: >
+          SELECT EXISTS (
+              SELECT 1 FROM pipegine_platform.execution e
+                  INNER JOIN pipeline p on p.id = e.pipeline_id
+                  INNER JOIN pipeline_step ps on p.id = ps.pipeline_id
+              WHERE
+                  e.id=?
+                  AND e.current_step=ps.step_number
+                  AND ps.step_id=?
+                  AND ps.provider_id=?
+          )

@@ -1,14 +1,14 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution;
 
 import br.edu.ifsp.scl.pipegene.domain.Execution;
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
+import br.edu.ifsp.scl.pipegene.web.model.execution.request.CreateExecutionRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ExecutionCRUD {
 
-    Execution addNewExecution(UUID projectId, ExecutionRequest executionRequest);
+    Execution addNewExecution(UUID projectId, CreateExecutionRequest request);
 
     Execution findExecutionById(UUID projectId, UUID executionId);
 

@@ -3,7 +3,7 @@ package br.edu.ifsp.scl.pipegene.web.controller;
 import br.edu.ifsp.scl.pipegene.domain.Execution;
 import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionCRUD;
 import br.edu.ifsp.scl.pipegene.usecases.execution.producer.SendExecutionsToProviders;
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
+import br.edu.ifsp.scl.pipegene.web.model.execution.request.CreateExecutionRequest;
 import br.edu.ifsp.scl.pipegene.web.model.execution.response.ExecutionResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @EnableAsync
+@RequestMapping("api/v1/projects/{projectId}/executions")
 @RestController
 public class ExecutionController {
 
@@ -28,16 +29,17 @@ public class ExecutionController {
         this.sendExecutionsToProviders = sendExecutionsToProviders;
     }
 
-    @PostMapping("v1/projects/{projectId}/executions")
+    @PostMapping
     public ResponseEntity<ExecutionResponse> addNewExecution(
             @PathVariable UUID projectId,
-            @RequestBody @Valid ExecutionRequest executionRequest) {
-        Execution execution = executionCRUD.addNewExecution(projectId, executionRequest);
+            @RequestBody @Valid CreateExecutionRequest request) {
+        Execution execution = executionCRUD.addNewExecution(projectId, request);
 
         return ResponseEntity.ok(ExecutionResponse.createJustId(execution.getId()));
     }
 
-    @GetMapping("v1/projects/{projectId}/executions")
+
+    @GetMapping
     public ResponseEntity<List<ExecutionResponse>> listAllExecutions(@PathVariable UUID projectId) {
         List<Execution> executions = executionCRUD.listAllExecutions(projectId);
 
@@ -48,7 +50,7 @@ public class ExecutionController {
         );
     }
 
-    @GetMapping("v1/projects/{projectId}/executions/{executionId}")
+    @GetMapping("/{executionId}")
     public ResponseEntity<ExecutionResponse> findExecutionById(
             @PathVariable UUID projectId,
             @PathVariable UUID executionId

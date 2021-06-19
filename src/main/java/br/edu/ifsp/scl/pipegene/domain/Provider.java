@@ -25,8 +25,22 @@ public class Provider {
         return new Provider(null, name, description, url, inputSupportedTypes, outputSupportedTypes, operations);
     }
 
-    public static Provider createWithPartialValues(UUID id, String inputSupportedType, String outputSupportedType) {
+    public static Provider createWithIdAndInputOutputSupportedTypes(UUID id, String inputSupportedType, String outputSupportedType) {
         return new Provider(id, Collections.singletonList(inputSupportedType), Collections.singletonList(outputSupportedType));
+    }
+
+    public static Provider createWithOnlyId(UUID id) {
+        return new Provider(id, new ArrayList<>(), new ArrayList<>());
+    }
+
+    public static Provider createWithPartialValues(UUID id, String name, String description) {
+        return new Provider(id, name, description);
+    }
+
+    private Provider(UUID id, String name, String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
     }
 
     public boolean isInputSupportedType(String inputType) {
@@ -58,8 +72,8 @@ public class Provider {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public Provider getNewInstanceWithId(UUID id) {
+        return new Provider(id, name, description, url, inputSupportedTypes, outputSupportedTypes, operations);
     }
 
     public String getUrl() {

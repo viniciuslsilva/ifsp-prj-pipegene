@@ -1,22 +1,16 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution;
 
-import br.edu.ifsp.scl.pipegene.domain.Dataset;
-import br.edu.ifsp.scl.pipegene.domain.Execution;
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
-import br.edu.ifsp.scl.pipegene.domain.Project;
+import br.edu.ifsp.scl.pipegene.domain.*;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionDAO;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.QueueService;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectDAO;
-import br.edu.ifsp.scl.pipegene.web.exception.GenericResourceException;
 import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionStepRequest;
+import br.edu.ifsp.scl.pipegene.web.model.execution.request.CreateExecutionRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class ExecutionCRUDImpl implements ExecutionCRUD {
@@ -32,33 +26,29 @@ public class ExecutionCRUDImpl implements ExecutionCRUD {
     }
 
     @Override
-    public Execution addNewExecution(UUID projectId, ExecutionRequest executionRequest) {
+    public Execution addNewExecution(UUID projectId, CreateExecutionRequest request) {
         Optional<Project> optionalProject = projectDAO.findProjectById(projectId);
         if (optionalProject.isEmpty()) {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
         Project project = optionalProject.get();
 
-        if (!project.hasDataset(executionRequest.getDataset())) {
-            throw new ResourceNotFoundException("Not found dataset: " + executionRequest.getDataset());
+        if(!project.hasDataset(request.getDatasetId())) {
+            throw new ResourceNotFoundException("Not found dataset with id: " + projectId);
         }
 
-        Boolean executionRequestIsValid = executionDAO.bathProviderInfoIsValid(
-                executionRequest.getExecutionSteps().stream()
-                        .map(ExecutionStepRequest::convertToProvider)
-                        .collect(Collectors.toList())
-        );
-
-        if (!executionRequestIsValid) {
-            throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Execution Request");
+        if(!project.hasPipeline(request.getPipelineId())) {
+            throw new ResourceNotFoundException("Not found pipeline with id: " + projectId);
         }
 
-        UUID executionId = queueService.add(executionRequest);
-        Dataset dataset = project.findDatasetById(executionRequest.getDataset());
+        UUID executionId = queueService.add(request);
+        Dataset dataset = project.findDatasetById(request.getDatasetId());
+        Pipeline pipeline = project.findPipelineById(request.getPipelineId());
 
-        return executionDAO.saveExecution(
-                Execution.createWithPartialValues(executionId, project, dataset, ExecutionStatusEnum.WAITING)
-        );
+        Execution execution = Execution.createWithWaitingStatus(executionId, pipeline, dataset,
+                request.getDescription());
+
+        return executionDAO.saveExecution(execution);
     }
 
     @Override
@@ -84,6 +74,6 @@ public class ExecutionCRUDImpl implements ExecutionCRUD {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
-        return projectDAO.findAllExecutionsByProjectId(projectId);
+        return executionDAO.findAllExecutionsByProjectId(projectId);
     }
 }

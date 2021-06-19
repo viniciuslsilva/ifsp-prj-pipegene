@@ -1,6 +1,6 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution.queue;
 
-import br.edu.ifsp.scl.pipegene.web.model.execution.request.ExecutionRequest;
+import br.edu.ifsp.scl.pipegene.web.model.execution.request.CreateExecutionRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -12,9 +12,9 @@ public class QueueServiceImpl implements QueueService {
     private final LinkedList<ExecutionQueueElement> queue = new LinkedList<>();
 
     @Override
-    public UUID add(ExecutionRequest executionRequest) {
+    public UUID add(CreateExecutionRequest request) {
         UUID id = UUID.randomUUID();
-        if (queue.add(ExecutionQueueElement.of(id, executionRequest))) {
+        if (queue.add(ExecutionQueueElement.of(id, request))) {
             return id;
         }
         throw new IllegalStateException(); // TODO(create a custom exception)

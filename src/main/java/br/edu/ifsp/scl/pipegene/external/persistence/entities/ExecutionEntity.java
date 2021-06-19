@@ -1,19 +1,15 @@
 package br.edu.ifsp.scl.pipegene.external.persistence.entities;
 
-import br.edu.ifsp.scl.pipegene.domain.Execution;
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStatusEnum;
-import br.edu.ifsp.scl.pipegene.domain.Project;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class ExecutionEntity {
     private UUID id;
     private UUID projectId;
     private DatasetEntity dataset;
+    private String description;
     private String status;
     private Integer currentStep;
     private List<ExecutionStepEntity> steps;
@@ -22,33 +18,38 @@ public class ExecutionEntity {
     // TODO("Add attributes created_at and limit_date")
 
 
-    public static ExecutionEntity createNewEntity(Execution execution) {
-        return new ExecutionEntity(
-                execution.getId(),
-                execution.getProject().getId(),
-                DatasetEntity.createFromDataset(execution.getDataset()),
-                execution.getStatus().name(),
-                execution.getCurrentStep(),
-                execution.getSteps().stream().map(ExecutionStepEntity::of).collect(Collectors.toList()),
-                execution.getExecutionResult()
-        );
+//    public static ExecutionEntity createNewEntity(Execution execution) {
+//        return new ExecutionEntity(
+//                execution.getId(),
+//                execution.getProject().getId(),
+//                DatasetEntity.createFromDataset(execution.getDataset()),
+//                execution.getDescription(),
+//                execution.getStatus().name(),
+//                execution.getCurrentStep(),
+//                execution.getSteps().stream().map(ExecutionStepEntity::of).collect(Collectors.toList()),
+//                execution.getExecutionResult()
+//        );
+//    }
+
+//    public Execution convertToExecution(Project project) {
+//        List<PipelineStep> pipelineSteps = steps.stream()
+//                .map(ExecutionStepEntity::toExecutionStep)
+//                .collect(Collectors.toList());
+//
+//        return Execution.createWithAllValues(id, project, dataset.convertToDataset(), description,
+//                ExecutionStatusEnum.valueOf(status), currentStep, pipelineSteps, executionResult
+//        );
+//    }
+
+    public ExecutionEntity() {
     }
 
-    public Execution convertToExecution(Project project) {
-        return Execution.createWithAllValues(id, project, dataset.convertToDataset(), ExecutionStatusEnum.valueOf(status),
-                currentStep, steps.stream()
-                        .map(ExecutionStepEntity::toExecutionStep)
-                        .collect(Collectors.toList()),
-                executionResult
-        );
-    }
-
-    public ExecutionEntity() { }
-
-    private ExecutionEntity(UUID id, UUID projectId, DatasetEntity dataset, String status, Integer currentStep, List<ExecutionStepEntity> steps, URI executionResult) {
+    private ExecutionEntity(UUID id, UUID projectId, DatasetEntity dataset, String description, String status,
+                            Integer currentStep, List<ExecutionStepEntity> steps, URI executionResult) {
         this.id = id;
         this.projectId = projectId;
         this.dataset = dataset;
+        this.description = description;
         this.status = status;
         this.currentStep = currentStep;
         this.steps = new ArrayList<>(steps);

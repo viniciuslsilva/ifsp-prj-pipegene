@@ -50,7 +50,7 @@ public final class FakeDatabase {
         PROVIDERS = Stream.of(
                 ProviderEntity.of(
                         UUID.fromString("baca1f38-5501-476f-a7f5-fe5958a55772"),
-                        "jorge provider",
+                        "jorge provider maf",
                         "jorge provider description",
                         "http://localhost:5000",
                         Collections.singletonList("maf"),
@@ -65,7 +65,7 @@ public final class FakeDatabase {
                 ),
                 ProviderEntity.of(
                         UUID.fromString("0fd493f8-fb58-455a-8cb9-d3561d111e70"),
-                        "jorge provider",
+                        "jorge provider taf",
                         "jorge provider description",
                         "http://localhost:5000",
                         Collections.singletonList("taf"),

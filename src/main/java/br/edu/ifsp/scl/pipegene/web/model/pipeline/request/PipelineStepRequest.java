@@ -1,11 +1,11 @@
-package br.edu.ifsp.scl.pipegene.web.model.execution.request;
+package br.edu.ifsp.scl.pipegene.web.model.pipeline.request;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 
 import java.util.Map;
 import java.util.UUID;
 
-public class ExecutionStepRequest {
+public class PipelineStepRequest {
 
     private UUID providerId;
     private String inputType;
@@ -14,13 +14,13 @@ public class ExecutionStepRequest {
     private Map<String, Object> params;
 
     public Provider convertToProvider() {
-        return Provider.createWithPartialValues(providerId, inputType, outputType);
+        return Provider.createWithIdAndInputOutputSupportedTypes(providerId, inputType, outputType);
     }
 
-    public ExecutionStepRequest() {
+    public PipelineStepRequest() {
     }
 
-    public ExecutionStepRequest(UUID providerId, String inputType, String outputType, Map<String, Object> params) {
+    public PipelineStepRequest(UUID providerId, String inputType, String outputType, Map<String, Object> params) {
         this.providerId = providerId;
         this.inputType = inputType;
         this.outputType = outputType;

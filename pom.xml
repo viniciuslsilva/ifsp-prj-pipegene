@@ -16,6 +16,7 @@
 	<properties>
 		<java.version>11</java.version>
 		<disruptor.version>3.3.11</disruptor.version>
+		<guava.version>28.2-jre</guava.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -75,6 +76,32 @@
 			<version>0.11.2</version>
 			<scope>runtime</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.11.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

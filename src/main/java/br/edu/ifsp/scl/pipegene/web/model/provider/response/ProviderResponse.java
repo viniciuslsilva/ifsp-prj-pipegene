@@ -43,6 +43,16 @@ public class ProviderResponse {
         this.operations = Collections.unmodifiableCollection(operations);
     }
 
+    public static ProviderResponse createWithPartialValuesFromProvider(Provider p) {
+        return new ProviderResponse(p.getId(), p.getName(), p.getDescription());
+    }
+
+    public ProviderResponse(UUID id, String name, String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
+
     public UUID getId() {
         return id;
     }

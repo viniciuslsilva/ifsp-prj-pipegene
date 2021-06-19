@@ -16,7 +16,6 @@ public class JacksonConfiguration {
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
     }
 }

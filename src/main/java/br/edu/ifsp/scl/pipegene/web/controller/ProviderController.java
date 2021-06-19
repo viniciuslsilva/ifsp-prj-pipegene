@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/api/v1/providers")
 public class ProviderController {
 
     private final ExecutionTransaction executionTransaction;
@@ -30,14 +31,14 @@ public class ProviderController {
         this.authenticationFacade = authenticationFacade;
     }
 
-    @PostMapping("v1/providers")
+    @PostMapping
     public ResponseEntity<ProviderResponse> addNewProvider(@RequestBody @Valid ProviderRequest providerRequest) {
         Provider provider = providerService.createNewProvider(providerRequest);
 
         return ResponseEntity.ok(ProviderResponse.createFromProvider(provider));
     }
 
-    @GetMapping("v1/providers")
+    @GetMapping
     public ResponseEntity<List<ProviderResponse>> listAllProviders() {
         List<Provider> providers = providerService.listAllProviders();
 
@@ -48,7 +49,7 @@ public class ProviderController {
         );
     }
 
-    @PostMapping("v1/providers/{providerId}/executions/{executionId}/steps/{stepId}")
+    @PostMapping("/{providerId}/executions/{executionId}/steps/{stepId}")
     public ResponseEntity<?> notifyExecutionResult(
             @PathVariable UUID providerId,
             @PathVariable UUID executionId,

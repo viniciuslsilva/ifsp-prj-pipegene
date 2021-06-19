@@ -1,8 +1,8 @@
 package br.edu.ifsp.scl.pipegene.web.model.execution.response;
 
 import br.edu.ifsp.scl.pipegene.domain.Execution;
-import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.web.model.DatasetDTO;
+import br.edu.ifsp.scl.pipegene.web.model.pipeline.response.PipelineResponse;
 
 import java.net.URI;
 import java.util.List;
@@ -11,8 +11,9 @@ import java.util.stream.Collectors;
 
 public class ExecutionResponse {
     private UUID id;
-    private Project project;
+    private PipelineResponse pipeline;
     private DatasetDTO dataset;
+    private String description;
     private String status;
 
     private URI executionResult;
@@ -26,8 +27,9 @@ public class ExecutionResponse {
     public static ExecutionResponse createFromExecution(Execution e) {
         return new ExecutionResponse(
                 e.getId(),
-                e.getProject(),
+                PipelineResponse.createJustIdAndDescriptionFromPipeline(e.getPipeline()),
                 DatasetDTO.createFromDataset(e.getDataset()),
+                e.getDescription(),
                 e.getStatus().name(),
                 e.getExecutionResult(),
                 e.getSteps().stream()
@@ -43,11 +45,12 @@ public class ExecutionResponse {
     private ExecutionResponse() {
     }
 
-    private ExecutionResponse(UUID id, Project project, DatasetDTO dataset, String status,
+    private ExecutionResponse(UUID id, PipelineResponse pipeline, DatasetDTO dataset, String description, String status,
                               URI executionResult, List<ExecutionStepResponse> steps) {
         this.id = id;
-        this.project = project;
+        this.pipeline = pipeline;
         this.dataset = dataset;
+        this.description = description;
         this.status = status;
         this.executionResult = executionResult;
         this.steps = steps;
@@ -57,47 +60,27 @@ public class ExecutionResponse {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
+    public PipelineResponse getPipeline() {
+        return pipeline;
     }
 
     public DatasetDTO getDataset() {
         return dataset;
     }
 
-    public void setDataset(DatasetDTO dataset) {
-        this.dataset = dataset;
+    public String getDescription() {
+        return description;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public URI getExecutionResult() {
         return executionResult;
     }
 
-    public void setExecutionResult(URI executionResult) {
-        this.executionResult = executionResult;
-    }
-
     public List<ExecutionStepResponse> getSteps() {
         return steps;
-    }
-
-    public void setSteps(List<ExecutionStepResponse> steps) {
-        this.steps = steps;
     }
 }
