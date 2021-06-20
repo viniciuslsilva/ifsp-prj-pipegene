@@ -10,7 +10,7 @@ public class DatasetDTO {
     private String filename;
 
     public static DatasetDTO createFromDataset(Dataset dataset) {
-        return new DatasetDTO(dataset.getId(), dataset.getFilename());
+        return new DatasetDTO(dataset.getId(), dataset.getFilename().split("_uploads_")[1]);
     }
 
     private DatasetDTO() { }

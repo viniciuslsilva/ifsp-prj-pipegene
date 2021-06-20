@@ -29,7 +29,8 @@ public class LocalStorageService implements ObjectStorageService {
     @Override
     public Dataset putObject(MultipartFile multipartFile) {
         UUID id = UUID.randomUUID();
-        String filename = id.toString() + "_uploads_" + multipartFile.getOriginalFilename() ;
+        String originalFilename = multipartFile.getOriginalFilename();
+        String filename = id.toString() + "_uploads_" + originalFilename ;
         File file = new File(ABSOLUTE_UPLOAD_PATH + filename);
 
         writeFile(file, multipartFile::getBytes);

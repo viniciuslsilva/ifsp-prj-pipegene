@@ -62,7 +62,7 @@ queries:
     dataset-dao:
       select:
         datasets-by-project-ids: >
-          SELECT * FROM pipegine_platform.dataset WHERE project_id = ANY(array[?]::uuid[]);
+          SELECT * FROM pipegine_platform.dataset WHERE project_id = ANY(?);
         datasets-by-project-id: >
           SELECT * FROM pipegine_platform.dataset WHERE project_id = ?;
 

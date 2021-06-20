@@ -30,9 +30,11 @@ public class DatasetDAOImpl implements DatasetDAO {
 
     @Override
     public List<Dataset> findDatasetsByProjectIds(Collection<UUID> projectIds) {
-        String ids = projectIds.stream().map(UUID::toString).collect(Collectors.joining(","));
+        Object[] ids = projectIds.toArray();
 
-        return jdbcTemplate.query(selectDatasetsByProjectIdsQuery, this::mapperDatasetFromRs, ids);
+        return jdbcTemplate.query(selectDatasetsByProjectIdsQuery,
+                ps -> ps.setObject(1, ps.getConnection().createArrayOf("uuid", ids)),
+                this::mapperDatasetFromRs);
     }
 
     @Override
