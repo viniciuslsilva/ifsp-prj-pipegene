@@ -94,6 +94,11 @@ queries:
         pipelines-by-project-id: >
           SELECT p.id, p.description FROM pipegine_platform.pipeline p WHERE p.project_id=?
 
+        pipelines-by-owner-id: >
+          SELECT p.id, p.description FROM pipegine_platform.pipeline p
+            INNER JOIN project pr ON pr.id = p.project_id
+          WHERE pr.owner_id=?
+
         pipeline-by-id: >
           SELECT p.id, p.description FROM pipegine_platform.pipeline p WHERE p.id=?
 
@@ -142,12 +147,14 @@ queries:
             e.id,
             e.description,
             e.result,
+            e.error_message,
             e.current_step,
             e.status,
             p.id pipeline_id,
             p.description pipeline_description,
             d.id dataset_id,
-            d.filename dataset_filename
+            d.filename dataset_filename,
+            d.project_id dataset_project_id
           FROM pipegine_platform.execution e
             INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
             INNER JOIN pipegine_platform.dataset d ON d.id=e.dataset_id
@@ -158,6 +165,7 @@ queries:
             e.id,
             e.description,
             e.result,
+            e.error_message,
             e.current_step,
             e.status,
             p.id pipeline_id,
@@ -176,6 +184,7 @@ queries:
             e.id,
             e.description,
             e.result,
+            e.error_message,
             e.current_step,
             e.status,
             p.id pipeline_id,
@@ -197,6 +206,7 @@ queries:
           FROM pipegine_platform.execution_step e
             INNER JOIN pipegine_platform.provider p ON p.id=e.provider_id
           WHERE e.execution_id=?
+          ORDER BY e.step_number;
 
         execution-steps-by-execution-ids:
           SELECT
@@ -209,9 +219,7 @@ queries:
 
         execution-by-id-and-project-id: >
           SELECT
-            e.description execution_description,
-            e.status execution_status,
-            e.current_step execution_current_step,
+            e.*,
             p.id pipeline_id,
             p.description pipeline_description,
             d.id dataset_id,
@@ -219,24 +227,26 @@ queries:
             d.project_id dataset_project_id
           FROM pipegine_platform.execution e
             INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
-            INNER JOIN pipegine_platform.project pr ON pr.id=p.project_id
             INNER JOIN pipegine_platform.dataset d ON d.id=e.dataset_id
-          WHERE e.id=? AND pr.id=? AND d.project_id=pr.id
+          WHERE e.id=? AND p.project_id=?
 
 
       update:
-        execution-by-id: >
-            UPDATE pipegine_platform.execution SET description=?, current_step=?, status=? WHERE id=?
+        execution: >
+          UPDATE pipegine_platform.execution SET description=?, current_step=?, status=?, result=?, error_message=?
+            WHERE id=?
+
+        execution-steps: >
+          UPDATE pipegine_platform.execution_step SET state=? WHERE id=?
 
       exists:
         execution-id-step-id-provider-id: >
           SELECT EXISTS (
               SELECT 1 FROM pipegine_platform.execution e
-                  INNER JOIN pipeline p on p.id = e.pipeline_id
-                  INNER JOIN pipeline_step ps on p.id = ps.pipeline_id
+                  INNER JOIN execution_step es on e.id = es.execution_id
               WHERE
                   e.id=?
-                  AND e.current_step=ps.step_number
-                  AND ps.step_id=?
-                  AND ps.provider_id=?
+                  AND e.current_step=es.step_number
+                  AND es.id=?
+                  AND es.provider_id=?
           )

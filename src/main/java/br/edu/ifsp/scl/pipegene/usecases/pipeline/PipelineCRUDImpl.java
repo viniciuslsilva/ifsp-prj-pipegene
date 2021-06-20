@@ -1,7 +1,7 @@
 package br.edu.ifsp.scl.pipegene.usecases.pipeline;
 
+import br.edu.ifsp.scl.pipegene.configuration.security.IAuthenticationFacade;
 import br.edu.ifsp.scl.pipegene.domain.PipelineStep;
-import br.edu.ifsp.scl.pipegene.domain.ExecutionStepState;
 import br.edu.ifsp.scl.pipegene.domain.Pipeline;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.usecases.pipeline.gateway.PipelineDAO;
@@ -23,10 +23,12 @@ public class PipelineCRUDImpl implements PipelineCRUD {
 
     private final ProjectDAO projectDAO;
     private final PipelineDAO pipelineDAO;
+    private final IAuthenticationFacade authenticationFacade;
 
-    public PipelineCRUDImpl(ProjectDAO projectDAO, PipelineDAO pipelineDAO) {
+    public PipelineCRUDImpl(ProjectDAO projectDAO, PipelineDAO pipelineDAO, IAuthenticationFacade authenticationFacade) {
         this.projectDAO = projectDAO;
         this.pipelineDAO = pipelineDAO;
+        this.authenticationFacade = authenticationFacade;
     }
 
     @Override
@@ -70,6 +72,15 @@ public class PipelineCRUDImpl implements PipelineCRUD {
     @Override
     public List<Pipeline> findAllPipeline(UUID projectId) {
         return pipelineDAO.findAll(projectId);
+    }
+
+    @Override
+    public List<Pipeline> listAllPipelinesByUserId(UUID userId) {
+        if (!userId.equals(authenticationFacade.getUserAuthenticatedId())) {
+            throw new IllegalArgumentException();
+        }
+
+        return pipelineDAO.listAllByOwnerId(userId);
     }
 
     @Override

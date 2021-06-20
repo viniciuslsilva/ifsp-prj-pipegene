@@ -16,6 +16,8 @@ public interface PipelineDAO {
 
     List<Pipeline> findAll(UUID projectId);
 
+    List<Pipeline> listAllByOwnerId(UUID ownerId);
+
     Collection<Pipeline> findPipelinesByProjectId(UUID projectId);
 
     Optional<Pipeline> findPipelineById(UUID pipelineId);

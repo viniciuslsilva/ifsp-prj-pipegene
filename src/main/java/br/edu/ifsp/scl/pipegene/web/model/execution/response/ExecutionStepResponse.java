@@ -54,6 +54,10 @@ public class ExecutionStepResponse {
         return outputType;
     }
 
+    public String getState() {
+        return state;
+    }
+
     public Map<String, Object> getParams() {
         return params;
     }

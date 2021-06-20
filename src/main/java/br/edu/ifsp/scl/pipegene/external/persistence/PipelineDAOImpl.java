@@ -37,6 +37,9 @@ public class PipelineDAOImpl implements PipelineDAO {
     @Value("${queries.sql.pipeline-dao.select.pipelines-by-project-id}")
     private String selectPipelinesByProjectIdQuery;
 
+    @Value("${queries.sql.pipeline-dao.select.pipelines-by-owner-id}")
+    private String selectPipelinesByOwnerIdQuery;
+
     @Value("${queries.sql.pipeline-dao.select.pipeline-by-id}")
     private String selectPipelineByIdQuery;
 
@@ -127,14 +130,23 @@ public class PipelineDAOImpl implements PipelineDAO {
     }
 
     @Override
+    public List<Pipeline> listAllByOwnerId(UUID ownerId) {
+        Collection<Pipeline> pipelines = retrieveAllBasedQueryWithAnIdCondition(selectPipelinesByOwnerIdQuery, ownerId);
+        return new ArrayList<>(pipelines);
+    }
+
+    @Override
     public Collection<Pipeline> findPipelinesByProjectId(UUID projectId) {
-        Map<UUID, Pipeline> pipelineMap = jdbcTemplate.query(selectPipelinesByProjectIdQuery,
+        return retrieveAllBasedQueryWithAnIdCondition(selectPipelinesByProjectIdQuery, projectId);
+    }
+
+    private Collection<Pipeline> retrieveAllBasedQueryWithAnIdCondition(String query, UUID id) {
+        Map<UUID, Pipeline> pipelineMap = jdbcTemplate.query(query,
                 (rs, rowNum) -> Pipeline.createWithoutProjectAndSteps((UUID) rs.getObject("id"),
                         rs.getString("description"))
-                , projectId).stream().collect(Collectors.toMap(Pipeline::getId, Function.identity()));
+                , id).stream().collect(Collectors.toMap(Pipeline::getId, Function.identity()));
 
         Object[] ids = pipelineMap.keySet().toArray();
-
 
         List<PipelineStep> steps = jdbcTemplate.query(selectPipelineStepsByPipelineIdsQuery,
                 ps -> ps.setObject(1, ps.getConnection().createArrayOf("uuid", ids)),

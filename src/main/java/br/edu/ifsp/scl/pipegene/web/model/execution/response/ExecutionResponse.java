@@ -17,6 +17,7 @@ public class ExecutionResponse {
     private String status;
 
     private URI executionResult;
+    private String errorMessage;
 
     private List<ExecutionStepResponse> steps;
 
@@ -32,6 +33,7 @@ public class ExecutionResponse {
                 e.getDescription(),
                 e.getStatus().name(),
                 e.getExecutionResult(),
+                e.getErrorMessage(),
                 e.getSteps().stream()
                         .map(ExecutionStepResponse::createFromExecutionStep)
                         .collect(Collectors.toList())
@@ -46,13 +48,14 @@ public class ExecutionResponse {
     }
 
     private ExecutionResponse(UUID id, PipelineResponse pipeline, DatasetDTO dataset, String description, String status,
-                              URI executionResult, List<ExecutionStepResponse> steps) {
+                              URI executionResult, String errorMessage, List<ExecutionStepResponse> steps) {
         this.id = id;
         this.pipeline = pipeline;
         this.dataset = dataset;
         this.description = description;
         this.status = status;
         this.executionResult = executionResult;
+        this.errorMessage = errorMessage;
         this.steps = steps;
     }
 
@@ -78,6 +81,10 @@ public class ExecutionResponse {
 
     public URI getExecutionResult() {
         return executionResult;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
     public List<ExecutionStepResponse> getSteps() {

@@ -90,7 +90,8 @@ ALTER TABLE pipegine_platform.pipeline_step
 CREATE TYPE pipegine_platform.execution_status AS ENUM (
     'WAITING',
     'IN_PROGRESS',
-    'DONE'
+    'DONE',
+    'ERROR'
 );
 
 ALTER TYPE pipegine_platform.execution_status OWNER TO "pipegine";

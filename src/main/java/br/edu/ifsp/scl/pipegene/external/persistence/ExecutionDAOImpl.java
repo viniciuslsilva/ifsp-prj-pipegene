@@ -4,6 +4,7 @@ import br.edu.ifsp.scl.pipegene.domain.*;
 import br.edu.ifsp.scl.pipegene.external.persistence.util.JsonUtil;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionDAO;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -32,8 +33,11 @@ public class ExecutionDAOImpl implements ExecutionDAO {
     @Value("${queries.sql.execution-dao.insert.execution-steps}")
     private String insertExecutionStepsQuery;
 
-    @Value("${queries.sql.execution-dao.update.execution-by-id}")
-    private String updateExecutionByIdQuery;
+    @Value("${queries.sql.execution-dao.update.execution}")
+    private String updateExecutionQuery;
+
+    @Value("${queries.sql.execution-dao.update.execution-steps}")
+    private String updateExecutionStepsQuery;
 
     @Value("${queries.sql.execution-dao.select.execution-by-id}")
     private String selectExecutionByIdQuery;
@@ -64,47 +68,31 @@ public class ExecutionDAOImpl implements ExecutionDAO {
 
     @Override
     public Optional<Execution> findExecutionByProjectIdAndExecutionId(UUID projectId, UUID executionId) {
-        Execution execution = jdbcTemplate.queryForObject(selectExecutionByIdAndProjectIdQuery, (rs, rowNum) -> {
-            String description = rs.getString("execution_description");
-            ExecutionStatusEnum status = ExecutionStatusEnum.valueOf(rs.getString("execution_status"));
-            Integer currentStep = rs.getInt("execution_current_step");
+        try {
+            Execution execution = jdbcTemplate.queryForObject(selectExecutionByIdAndProjectIdQuery,
+                    this::mapperExecutionFromRs, executionId, projectId);
 
-            Pipeline pipeline = Pipeline.createWithoutProjectAndSteps(
-                    (UUID) rs.getObject("pipeline_id"),
-                    rs.getString("pipeline_description")
-            );
-
-            Dataset dataset = new Dataset(
-                    (UUID) rs.getObject("dataset_id"),
-                    rs.getString("dataset_filename"),
-                    Project.createWithOnlyId(projectId)
-            );
-
-            return Execution.createWithoutSteps(executionId, pipeline, dataset, description,
-                    status, currentStep, null);
-        }, executionId, projectId);
-
-        if (Objects.nonNull(execution)) {
+            if (Objects.isNull(execution)) { throw new IllegalStateException(); }
             List<ExecutionStep> steps = findExecutionStepsByExecutionId(executionId);
             execution.setSteps(steps);
 
             return Optional.of(execution);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
         }
-
-        return Optional.empty();
     }
 
     @Override
     public List<Execution> findAllExecutionsByProjectId(UUID projectId) {
-        return retrieveAllBasedQuery(selectExecutionsByProjectIdQuery, projectId);
+        return retrieveAllBasedQueryWithAnIdCondition(selectExecutionsByProjectIdQuery, projectId);
     }
 
     @Override
     public List<Execution> listAllByOwnerId(UUID ownerId) {
-        return retrieveAllBasedQuery(selectExecutionsByOwnerIdQuery, ownerId);
+        return retrieveAllBasedQueryWithAnIdCondition(selectExecutionsByOwnerIdQuery, ownerId);
     }
 
-    private List<Execution> retrieveAllBasedQuery(String query, UUID id) {
+    private List<Execution> retrieveAllBasedQueryWithAnIdCondition(String query, UUID id) {
         Map<UUID, Execution> executionMap = jdbcTemplate.query(query,
                 this::mapperExecutionFromRs, id).stream()
                 .collect(Collectors.toMap(Execution::getId, Function.identity()));
@@ -144,6 +132,7 @@ public class ExecutionDAOImpl implements ExecutionDAO {
 
         String description = rs.getString("description");
         String result = rs.getString("result");
+        String errorMessage = rs.getString("error_message");
         Integer currentStep = rs.getInt("current_step");
         ExecutionStatusEnum status = ExecutionStatusEnum.valueOf(rs.getString("status"));
 
@@ -158,7 +147,8 @@ public class ExecutionDAOImpl implements ExecutionDAO {
         );
         URI resultURI = Objects.nonNull(result) ? URI.create(result) : null;
 
-        return Execution.createWithoutSteps(executionId, pipeline, dataset, description, status, currentStep, resultURI);
+        return Execution.createWithoutSteps(executionId, pipeline, dataset, description, status, currentStep,
+                resultURI, errorMessage);
     }
 
     private List<ExecutionStep> findExecutionStepsByExecutionId(UUID executionId) {
@@ -248,11 +238,37 @@ public class ExecutionDAOImpl implements ExecutionDAO {
         return execution;
     }
 
+    @Transactional
     @Override
     public void updateExecution(Execution execution) {
-        jdbcTemplate.update(updateExecutionByIdQuery, execution.getDescription(), execution.getCurrentStep(), execution.getStatus().name(),
-                execution.getId());
-        // Update execution_steps
 
+        jdbcTemplate.update(updateExecutionQuery, ps -> {
+            ps.setString(1, execution.getDescription());
+            ps.setInt(2, execution.getCurrentStep());
+            ps.setObject(3, execution.getStatus(), Types.OTHER);
+
+            String result = Objects.isNull(execution.getExecutionResult()) ? null
+                    : execution.getExecutionResult().toString();
+
+            ps.setString(4, result);
+            ps.setString(5, execution.getErrorMessage());
+            ps.setObject(6, execution.getId());
+        });
+
+        List<ExecutionStep> steps = execution.getSteps();
+
+        // Update execution_steps
+        jdbcTemplate.batchUpdate(updateExecutionStepsQuery, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setObject(1, steps.get(i).getState(), Types.OTHER);
+                ps.setObject(2, steps.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return steps.size();
+            }
+        });
     }
 }

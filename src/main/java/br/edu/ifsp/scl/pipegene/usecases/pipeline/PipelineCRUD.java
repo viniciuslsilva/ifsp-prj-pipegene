@@ -13,4 +13,6 @@ public interface PipelineCRUD {
     List<Pipeline> findAllPipeline(UUID projectId);
 
     Pipeline findByProjectIdAndPipelineId(UUID projectId, UUID pipelineId);
+
+    List<Pipeline> listAllPipelinesByUserId(UUID userId);
 }

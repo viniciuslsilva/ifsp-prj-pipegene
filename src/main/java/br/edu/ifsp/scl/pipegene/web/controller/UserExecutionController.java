@@ -23,7 +23,7 @@ public class UserExecutionController {
         this.executionCRUD = executionCRUD;
     }
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<List<ExecutionResponse>> listAllExecutions(@PathVariable UUID userId) {
         List<Execution> executions = executionCRUD.listAllExecutionByUserId(userId);
 

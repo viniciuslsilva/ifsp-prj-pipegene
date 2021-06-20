@@ -15,8 +15,7 @@ public class PipelineStepResponse {
     public static PipelineStepResponse createFromPipelineStep(PipelineStep step) {
         return new PipelineStepResponse(
                 step.getStepId(),
-//                step.getProviderId(),
-                null,
+                step.getProvider().getId(),
                 step.getInputType(),
                 step.getOutputType(),
                 step.getParams()
