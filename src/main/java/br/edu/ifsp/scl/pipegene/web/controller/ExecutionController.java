@@ -41,7 +41,7 @@ public class ExecutionController {
 
     @GetMapping
     public ResponseEntity<List<ExecutionResponse>> listAllExecutions(@PathVariable UUID projectId) {
-        List<Execution> executions = executionCRUD.listAllExecutions(projectId);
+        List<Execution> executions = executionCRUD.listAllExecutionsByProjectId(projectId);
 
         return ResponseEntity.ok(
                 executions.stream()

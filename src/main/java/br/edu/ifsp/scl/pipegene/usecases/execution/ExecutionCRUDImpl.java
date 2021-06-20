@@ -1,6 +1,10 @@
 package br.edu.ifsp.scl.pipegene.usecases.execution;
 
-import br.edu.ifsp.scl.pipegene.domain.*;
+import br.edu.ifsp.scl.pipegene.configuration.security.IAuthenticationFacade;
+import br.edu.ifsp.scl.pipegene.domain.Dataset;
+import br.edu.ifsp.scl.pipegene.domain.Execution;
+import br.edu.ifsp.scl.pipegene.domain.Pipeline;
+import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionDAO;
 import br.edu.ifsp.scl.pipegene.usecases.execution.queue.QueueService;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectDAO;
@@ -18,11 +22,13 @@ public class ExecutionCRUDImpl implements ExecutionCRUD {
     private final ExecutionDAO executionDAO;
     private final ProjectDAO projectDAO;
     private final QueueService queueService;
+    private final IAuthenticationFacade authenticationFacade;
 
-    public ExecutionCRUDImpl(ExecutionDAO executionDAO, ProjectDAO projectDAO, QueueService queueService) {
+    public ExecutionCRUDImpl(ExecutionDAO executionDAO, ProjectDAO projectDAO, QueueService queueService, IAuthenticationFacade authenticationFacade) {
         this.executionDAO = executionDAO;
         this.projectDAO = projectDAO;
         this.queueService = queueService;
+        this.authenticationFacade = authenticationFacade;
     }
 
     @Override
@@ -33,11 +39,11 @@ public class ExecutionCRUDImpl implements ExecutionCRUD {
         }
         Project project = optionalProject.get();
 
-        if(!project.hasDataset(request.getDatasetId())) {
+        if (!project.hasDataset(request.getDatasetId())) {
             throw new ResourceNotFoundException("Not found dataset with id: " + projectId);
         }
 
-        if(!project.hasPipeline(request.getPipelineId())) {
+        if (!project.hasPipeline(request.getPipelineId())) {
             throw new ResourceNotFoundException("Not found pipeline with id: " + projectId);
         }
 
@@ -68,12 +74,21 @@ public class ExecutionCRUDImpl implements ExecutionCRUD {
     }
 
     @Override
-    public List<Execution> listAllExecutions(UUID projectId) {
+    public List<Execution> listAllExecutionsByProjectId(UUID projectId) {
         Boolean projectExists = projectDAO.projectExists(projectId);
         if (!projectExists) {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
         return executionDAO.findAllExecutionsByProjectId(projectId);
+    }
+
+    @Override
+    public List<Execution> listAllExecutionByUserId(UUID userId) {
+        if (!userId.equals(authenticationFacade.getUserAuthenticatedId())) {
+            throw new IllegalArgumentException();
+        }
+
+        return executionDAO.listAllByOwnerId(userId);
     }
 }

@@ -4,9 +4,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.UUID;
 
 public class ApplicationUser implements UserDetails {
 
+    private UUID id;
     private String username;
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
@@ -16,6 +18,7 @@ public class ApplicationUser implements UserDetails {
     private boolean isEnabled;
 
     public ApplicationUser(UserDetails userDetails) {
+        id = UUID.randomUUID();
         username = userDetails.getUsername();
         password = userDetails.getPassword();
         authorities = userDetails.getAuthorities();
@@ -23,6 +26,10 @@ public class ApplicationUser implements UserDetails {
         isAccountNonLocked = true;
         isCredentialsNonExpired = true;
         isEnabled = true;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     @Override

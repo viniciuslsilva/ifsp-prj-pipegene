@@ -43,6 +43,9 @@ public class PipelineDAOImpl implements PipelineDAO {
     @Value("${queries.sql.pipeline-dao.select.pipeline-steps-by-pipeline-ids}")
     private String selectPipelineStepsByPipelineIdsQuery;
 
+    @Value("${queries.sql.pipeline-dao.select.pipeline-steps-by-pipeline-id}")
+    private String selectPipelineStepsByPipelineIdQuery;
+
 
     public PipelineDAOImpl(JdbcTemplate jdbcTemplate, JsonUtil jsonUtil) {
         this.jdbcTemplate = jdbcTemplate;
@@ -156,7 +159,7 @@ public class PipelineDAOImpl implements PipelineDAO {
                 throw new IllegalStateException();
             }
 
-            List<PipelineStep> steps = jdbcTemplate.query(selectPipelineStepsByPipelineIdsQuery,
+            List<PipelineStep> steps = jdbcTemplate.query(selectPipelineStepsByPipelineIdQuery,
                     this::mapperPipelineStepFromRs, pipelineId);
             steps.forEach(pipeline::addStep);
 

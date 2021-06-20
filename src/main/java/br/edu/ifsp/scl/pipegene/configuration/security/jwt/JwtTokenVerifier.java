@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.UUID;
 
 public class JwtTokenVerifier extends OncePerRequestFilter {
 
@@ -48,14 +49,14 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
 
             Claims body = claimsJws.getBody();
             String principal = body.getSubject();
-
+            UUID userId = UUID.fromString(principal);
 //            var authorities = (List<Map<String, String>>) body.get("authorities");
 //            Set<SimpleGrantedAuthority> simpleGrantedAuthorities = authorities.stream()
 //                    .map(m -> new SimpleGrantedAuthority(m.get("authority")))
 //                    .collect(Collectors.toSet());
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    principal,
+                    userId,
                     null,
                     null
 

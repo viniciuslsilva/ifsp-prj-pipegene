@@ -60,9 +60,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
                                             Authentication authResult) {
         var user = (ApplicationUser) authResult.getPrincipal();
         String token = Jwts.builder()
-                .setSubject(user.getUsername())
+                .setSubject(user.getId().toString())
 //                .claim("authorities", authResult.getAuthorities())
-                .claim("userId", UUID.randomUUID())
 //                .claim("name", user.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))

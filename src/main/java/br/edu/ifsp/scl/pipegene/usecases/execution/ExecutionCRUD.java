@@ -12,5 +12,7 @@ public interface ExecutionCRUD {
 
     Execution findExecutionById(UUID projectId, UUID executionId);
 
-    List<Execution> listAllExecutions(UUID projectId);
+    List<Execution> listAllExecutionsByProjectId(UUID projectId);
+
+    List<Execution> listAllExecutionByUserId(UUID userId);
 }

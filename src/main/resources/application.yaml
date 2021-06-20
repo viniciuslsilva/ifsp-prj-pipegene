@@ -98,7 +98,13 @@ queries:
           SELECT p.id, p.description FROM pipegine_platform.pipeline p WHERE p.id=?
 
         pipeline-steps-by-pipeline-id: >
-          SELECT * FROM pipegine_platform.pipeline_step WHERE pipeline_id=?;
+          SELECT
+            ps.*,
+            p.name provider_name,
+            p.description provider_description
+          FROM pipegine_platform.pipeline_step ps
+            INNER JOIN pipegine_platform.provider p ON p.id=ps.provider_id
+          WHERE ps.pipeline_id=?
 
         pipeline-steps-by-pipeline-ids: >
           SELECT
@@ -164,6 +170,24 @@ queries:
             INNER JOIN pipegine_platform.project pr ON pr.id=p.project_id
             INNER JOIN pipegine_platform.dataset d ON d.id=e.dataset_id
           WHERE pr.id=? AND d.project_id=pr.id
+
+        executions-by-owner-id: >
+          SELECT
+            e.id,
+            e.description,
+            e.result,
+            e.current_step,
+            e.status,
+            p.id pipeline_id,
+            p.description pipeline_description,
+            d.id dataset_id,
+            d.filename dataset_filename,
+            d.project_id dataset_project_id
+          FROM pipegine_platform.execution e
+            INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
+            INNER JOIN pipegine_platform.project pr ON pr.id=p.project_id
+            INNER JOIN pipegine_platform.dataset d ON d.id=e.dataset_id
+          WHERE pr.owner_id=?
 
         execution-steps-by-execution-id:
           SELECT

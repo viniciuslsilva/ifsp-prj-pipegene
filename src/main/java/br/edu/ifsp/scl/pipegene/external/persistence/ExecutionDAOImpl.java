@@ -50,6 +50,9 @@ public class ExecutionDAOImpl implements ExecutionDAO {
     @Value("${queries.sql.execution-dao.select.executions-by-project-id}")
     private String selectExecutionsByProjectIdQuery;
 
+    @Value("${queries.sql.execution-dao.select.executions-by-owner-id}")
+    private String selectExecutionsByOwnerIdQuery;
+
     @Value("${queries.sql.execution-dao.exists.execution-id-step-id-provider-id}")
     private String existsExecutionStepProviderQuery;
 
@@ -93,8 +96,17 @@ public class ExecutionDAOImpl implements ExecutionDAO {
 
     @Override
     public List<Execution> findAllExecutionsByProjectId(UUID projectId) {
-        Map<UUID, Execution> executionMap = jdbcTemplate.query(selectExecutionsByProjectIdQuery,
-                this::mapperExecutionFromRs, projectId).stream()
+        return retrieveAllBasedQuery(selectExecutionsByProjectIdQuery, projectId);
+    }
+
+    @Override
+    public List<Execution> listAllByOwnerId(UUID ownerId) {
+        return retrieveAllBasedQuery(selectExecutionsByOwnerIdQuery, ownerId);
+    }
+
+    private List<Execution> retrieveAllBasedQuery(String query, UUID id) {
+        Map<UUID, Execution> executionMap = jdbcTemplate.query(query,
+                this::mapperExecutionFromRs, id).stream()
                 .collect(Collectors.toMap(Execution::getId, Function.identity()));
 
         Map<UUID, List<ExecutionStep>> steps = findExecutionStepsByExecutionIds(executionMap.keySet()).stream()

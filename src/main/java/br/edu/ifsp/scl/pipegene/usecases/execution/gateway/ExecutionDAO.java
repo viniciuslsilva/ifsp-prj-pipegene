@@ -21,4 +21,6 @@ public interface ExecutionDAO {
     void updateExecution(Execution execution);
 
     List<Execution> findAllExecutionsByProjectId(UUID projectId);
+
+    List<Execution> listAllByOwnerId(UUID ownerId);
 }
