@@ -49,10 +49,6 @@ queries:
             p.owner_id
           FROM pipegine_platform.project p WHERE p.id=?
 
-
-        project-datasets: >
-          SELECT d.id, d.filename FROM pipegine_platform.dataset d WHERE d.project_id=?
-
         project-all: >
           SELECT * FROM pipegine_platform.project
       exists:
@@ -62,6 +58,13 @@ queries:
       update:
         project: >
           UPDATE pipegine_platform.project SET name=?, description=? WHERE id=?
+
+    dataset-dao:
+      select:
+        datasets-by-project-ids: >
+          SELECT * FROM pipegine_platform.dataset WHERE project_id = ANY(array[?]::uuid[]);
+        datasets-by-project-id: >
+          SELECT * FROM pipegine_platform.dataset WHERE project_id = ?;
 
     pipeline-dao:
       insert:
@@ -104,7 +107,7 @@ queries:
             p.description provider_description
           FROM pipegine_platform.pipeline_step ps
             INNER JOIN pipegine_platform.provider p ON p.id=ps.provider_id
-          WHERE ps.pipeline_id=ANY(array[?]::uuid[])
+          WHERE ps.pipeline_id=ANY(?)
     provider-dao:
       insert:
         provider: >
@@ -154,7 +157,8 @@ queries:
             p.id pipeline_id,
             p.description pipeline_description,
             d.id dataset_id,
-            d.filename dataset_filename
+            d.filename dataset_filename,
+            d.project_id dataset_project_id
           FROM pipegine_platform.execution e
             INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
             INNER JOIN pipegine_platform.project pr ON pr.id=p.project_id
@@ -187,7 +191,8 @@ queries:
             p.id pipeline_id,
             p.description pipeline_description,
             d.id dataset_id,
-            d.filename dataset_filename
+            d.filename dataset_filename,
+            d.project_id dataset_project_id
           FROM pipegine_platform.execution e
             INNER JOIN pipegine_platform.pipeline p ON p.id=e.pipeline_id
             INNER JOIN pipegine_platform.project pr ON pr.id=p.project_id

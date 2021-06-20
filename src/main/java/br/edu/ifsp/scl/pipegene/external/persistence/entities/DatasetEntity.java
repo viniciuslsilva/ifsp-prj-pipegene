@@ -14,7 +14,7 @@ public class DatasetEntity {
     }
 
     public Dataset convertToDataset() {
-        return new Dataset(id, filename);
+        return new Dataset(id, filename, null);
     }
 
     public DatasetEntity() {

@@ -11,12 +11,15 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 @Repository
 public class ProjectDAOImpl implements ProjectDAO {
@@ -25,6 +28,7 @@ public class ProjectDAOImpl implements ProjectDAO {
 
     private final JdbcTemplate jdbcTemplate;
     private final PipelineDAO pipelineDAO;
+    private final DatasetDAO datasetDAO;
 
     @Value("${queries.sql.project-dao.insert.project}")
     private String insertProjectQuery;
@@ -35,9 +39,6 @@ public class ProjectDAOImpl implements ProjectDAO {
     @Value("${queries.sql.project-dao.select.project-by-id}")
     private String selectProjectByIdQuery;
 
-    @Value("${queries.sql.project-dao.select.project-datasets}")
-    private String selectProjectDatasetsQuery;
-
     @Value("${queries.sql.project-dao.select.project-all}")
     private String selectAllProjectQuery;
 
@@ -47,9 +48,10 @@ public class ProjectDAOImpl implements ProjectDAO {
     @Value("${queries.sql.project-dao.update.project}")
     private String updateProjectQuery;
 
-    public ProjectDAOImpl(JdbcTemplate jdbcTemplate, PipelineDAO pipelineDAO) {
+    public ProjectDAOImpl(JdbcTemplate jdbcTemplate, PipelineDAO pipelineDAO, DatasetDAO datasetDAO) {
         this.jdbcTemplate = jdbcTemplate;
         this.pipelineDAO = pipelineDAO;
+        this.datasetDAO = datasetDAO;
     }
 
     @Transactional
@@ -72,7 +74,7 @@ public class ProjectDAOImpl implements ProjectDAO {
             }
         });
 
-        return Project.of(projectId, datasets, name, description, null, OWNER_ID);
+        return Project.createWithoutPipelines(projectId, datasets, name, description, OWNER_ID);
     }
 
     @Override
@@ -89,16 +91,14 @@ public class ProjectDAOImpl implements ProjectDAO {
                 String description = rs.getString("description");
                 UUID ownerId = (UUID) rs.getObject("owner_id");
 
-                return Project.of(id, null, name, description, null, ownerId);
+                return Project.createWithoutDatasetsAndPipelines(id, name, description, ownerId);
             }, id);
 
             if (Objects.isNull(project)) {
                 throw new IllegalStateException();
             }
 
-            jdbcTemplate.query(selectProjectDatasetsQuery, (rs, rowNum) -> new Dataset(
-                    (UUID) rs.getObject("id"), rs.getString("filename")
-            ), id).forEach(project::addDataset);
+            datasetDAO.findDatasetsByProjectId(id).forEach(project::addDataset);
 
 
             List<Pipeline> pipelines = pipelineDAO.findPipelinesByProjectId(project.getId())
@@ -120,13 +120,33 @@ public class ProjectDAOImpl implements ProjectDAO {
 
     @Override
     public List<Project> findAllProjects() {
-        return jdbcTemplate.query(selectAllProjectQuery, (rs, row) -> {
-            UUID id = (UUID) rs.getObject("id");
-            String name = rs.getString("name");
-            String description = rs.getString("description");
-            UUID ownerId = (UUID) rs.getObject("owner_id");
+        Map<UUID, Project> projects = jdbcTemplate.query(selectAllProjectQuery, this::mapperProjectFromRs).stream()
+                .collect(Collectors.toMap(Project::getId, Function.identity()));
 
-            return Project.of(id, null, name, description, null, ownerId);
+        Collection<UUID> projectIds = projects.keySet();
+
+        datasetDAO.findDatasetsByProjectIds(projectIds)
+                .forEach(dataset -> projects.get(dataset.getProjectId()).addDataset(dataset));
+
+        // TODO("Create a findPipelinesByProjectIds method at PipelineDAO")
+        projectIds.forEach(id -> {
+            Project project = projects.get(id);
+            List<Pipeline> pipelines = pipelineDAO.findPipelinesByProjectId(id).stream()
+                    .peek(pipeline -> pipeline.setProject(project))
+                    .collect(Collectors.toList());
+            project.addPipeline(pipelines);
         });
+
+        return new ArrayList<>(projects.values());
+    }
+
+
+    private Project mapperProjectFromRs(ResultSet rs, int rowNum) throws SQLException {
+        UUID id = (UUID) rs.getObject("id");
+        String name = rs.getString("name");
+        String description = rs.getString("description");
+        UUID ownerId = (UUID) rs.getObject("owner_id");
+
+        return Project.createWithoutDatasetsAndPipelines(id, name, description, ownerId);
     }
 }

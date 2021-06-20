@@ -43,6 +43,7 @@ public class ProviderOperationDTO {
         return description;
     }
 
+
     public List<OperationParamDTO> getParams() {
         return params;
     }
@@ -51,23 +52,26 @@ public class ProviderOperationDTO {
         private String type;
         private String option;
         private String key;
+        private String name;
         private Object example;
 
         private static OperationParamDTO createFromProviderOperationParam(ProviderOperationParam param) {
-            return new OperationParamDTO(param.getType(), param.getOption(), param.getKey(), param.getExample());
+            return new OperationParamDTO(param.getType(), param.getOption(), param.getKey(), param.getName(),
+                    param.getExample());
         }
 
         private ProviderOperationParam toProviderOperation() {
-            return new ProviderOperationParam(type, option, key, example);
+            return new ProviderOperationParam(type, option, key, name, example);
         }
 
         public OperationParamDTO() {
         }
 
-        public OperationParamDTO(String type, String option, String key, Object example) {
+        public OperationParamDTO(String type, String option, String key, String name, Object example) {
             this.type = type;
             this.option = option;
             this.key = key;
+            this.name = name;
             this.example = example;
         }
 
@@ -81,6 +85,10 @@ public class ProviderOperationDTO {
 
         public String getKey() {
             return key;
+        }
+
+        public String getName() {
+            return name;
         }
 
         public Object getExample() {

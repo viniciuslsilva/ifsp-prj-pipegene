@@ -6,18 +6,24 @@ public class Dataset {
     private UUID id;
     private String filename;
 
+    private Project project;
 
-    public static Dataset createWithoutFilename(UUID id) {
-        return new Dataset(id, null);
-    }
-
-    public Dataset(UUID id, String filename) {
+    public Dataset(UUID id, String filename, Project project) {
         this.id = id;
         this.filename = filename;
+        this.project = project;
     }
 
-    public static Dataset of(UUID id, String filename) {
-        return new Dataset(id, filename);
+    public static Dataset of(UUID id, String filename, Project project) {
+        return new Dataset(id, filename, project);
+    }
+
+    public static Dataset createWithoutProject(UUID id, String filename) {
+        return new Dataset(id, filename, null);
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public UUID getId() {
@@ -26,5 +32,13 @@ public class Dataset {
 
     public String getFilename() {
         return filename;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public UUID getProjectId() {
+        return project.getId();
     }
 }

@@ -3,7 +3,6 @@ package br.edu.ifsp.scl.pipegene.external.persistence;
 import br.edu.ifsp.scl.pipegene.domain.*;
 import br.edu.ifsp.scl.pipegene.external.persistence.util.JsonUtil;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionDAO;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -74,7 +73,8 @@ public class ExecutionDAOImpl implements ExecutionDAO {
 
             Dataset dataset = new Dataset(
                     (UUID) rs.getObject("dataset_id"),
-                    rs.getString("dataset_filename")
+                    rs.getString("dataset_filename"),
+                    Project.createWithOnlyId(projectId)
             );
 
             return Execution.createWithoutSteps(executionId, pipeline, dataset, description,
@@ -141,7 +141,8 @@ public class ExecutionDAOImpl implements ExecutionDAO {
 
         Dataset dataset = new Dataset(
                 (UUID) rs.getObject("dataset_id"),
-                rs.getString("dataset_filename")
+                rs.getString("dataset_filename"),
+                Project.createWithOnlyId((UUID) rs.getObject("dataset_project_id"))
         );
         URI resultURI = Objects.nonNull(result) ? URI.create(result) : null;
 

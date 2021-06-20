@@ -35,6 +35,10 @@ public class Project {
         this.datasets.add(dataset);
     }
 
+    public void addDataset(List<Dataset> datasets) {
+        this.datasets.addAll(datasets);
+    }
+
     public void addPipeline(List<Pipeline> pipelines) {
         this.pipelines.addAll(pipelines);
     }
@@ -46,13 +50,18 @@ public class Project {
         this.description = description;
         this.pipelines = pipelines;
         this.ownerId = ownerId;
+
+        datasets.forEach(d -> d.setProject(this));
     }
 
-    public static Project of(UUID id, List<Dataset> datasets, String name, String description, List<Pipeline> pipelines,
-                             UUID ownerId) {
+    public static Project createWithoutPipelines(UUID id, List<Dataset> datasets, String name, String description,
+                                                 UUID ownerId) {
         List<Dataset> datasetList = Objects.isNull(datasets) ? new ArrayList<>() : new ArrayList<>(datasets);
-        List<Pipeline> pipelineList = Objects.isNull(pipelines) ? new ArrayList<>() : new ArrayList<>(pipelines);
-        return new Project(id, datasetList, name, description, pipelineList, ownerId);
+        return new Project(id, datasetList, name, description, new ArrayList<>(), ownerId);
+    }
+
+    public static Project createWithoutDatasetsAndPipelines(UUID id, String name, String description, UUID ownerId) {
+        return new Project(id, new ArrayList<>(), name, description, new ArrayList<>(), ownerId);
     }
 
     private Project(UUID id) {

@@ -34,7 +34,7 @@ public class LocalStorageService implements ObjectStorageService {
 
         writeFile(file, multipartFile::getBytes);
 
-        Dataset dataset = Dataset.of(id, filename);
+        Dataset dataset = Dataset.createWithoutProject(id, filename);
         FILES.add(dataset);
 
         return dataset;
@@ -69,7 +69,7 @@ public class LocalStorageService implements ObjectStorageService {
                     .filter(file -> !file.isDirectory())
                     .map(file -> {
                         UUID id = UUID.fromString(file.getName().split("_uploads_")[0]);
-                        return Dataset.of(id, file.getName());
+                        return Dataset.createWithoutProject(id, file.getName());
                     })
                     .collect(Collectors.toSet());
         } catch (Exception e) {

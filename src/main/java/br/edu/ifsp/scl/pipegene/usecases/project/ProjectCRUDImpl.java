@@ -27,7 +27,9 @@ public class ProjectCRUDImpl implements ProjectCRUD {
 
     @Override
     public Project createNewProject(String name, String description, List<MultipartFile> files) {
-        List<Dataset> datasets = files.stream().map(objectStorageService::putObject).collect(Collectors.toList());
+        List<Dataset> datasets = files.stream()
+                .map(objectStorageService::putObject)
+                .collect(Collectors.toList());
 
         return projectDAO.saveNewProject(name, description, datasets);
     }

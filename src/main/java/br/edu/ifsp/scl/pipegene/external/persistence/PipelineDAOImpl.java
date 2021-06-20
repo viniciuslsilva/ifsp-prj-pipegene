@@ -97,7 +97,8 @@ public class PipelineDAOImpl implements PipelineDAO {
                         rs.getString("pipeline_step_input_type"),
                         rs.getString("pipeline_step_output_type"),
                         jsonUtil.retrieveStepParams(rs.getString("pipeline_step_params")),
-                        rs.getInt("pipeline_step_number")
+                        rs.getInt("pipeline_step_number"),
+                        Pipeline.createWithOnlyId(pipelineId)
                 );
 
                 if (pipelineMap.containsKey(pipelineId)) {
@@ -129,16 +130,13 @@ public class PipelineDAOImpl implements PipelineDAO {
                         rs.getString("description"))
                 , projectId).stream().collect(Collectors.toMap(Pipeline::getId, Function.identity()));
 
-        String ids = pipelineMap.keySet().stream().map(UUID::toString).collect(Collectors.joining(","));
+        Object[] ids = pipelineMap.keySet().toArray();
 
-        jdbcTemplate.query(selectPipelineStepsByPipelineIdsQuery, (rs, rowNum) -> {
-            PipelineStep step = mapperPipelineStepFromRs(rs);
-            UUID pipeline_id = (UUID) rs.getObject("pipeline_id");
 
-            pipelineMap.get(pipeline_id).addStep(step);
-
-            return null;
-        }, ids);
+        List<PipelineStep> steps = jdbcTemplate.query(selectPipelineStepsByPipelineIdsQuery,
+                ps -> ps.setObject(1, ps.getConnection().createArrayOf("uuid", ids)),
+                this::mapperPipelineStepFromRs);
+        steps.forEach(step -> pipelineMap.get(step.getPipelineId()).addStep(step));
 
         return pipelineMap.values();
     }
@@ -159,7 +157,7 @@ public class PipelineDAOImpl implements PipelineDAO {
             }
 
             List<PipelineStep> steps = jdbcTemplate.query(selectPipelineStepsByPipelineIdsQuery,
-                    (rs, rowNum) -> mapperPipelineStepFromRs(rs), pipelineId);
+                    this::mapperPipelineStepFromRs, pipelineId);
             steps.forEach(pipeline::addStep);
 
             return Optional.of(pipeline);
@@ -169,7 +167,7 @@ public class PipelineDAOImpl implements PipelineDAO {
     }
 
 
-    private PipelineStep mapperPipelineStepFromRs(ResultSet rs) throws SQLException {
+    private PipelineStep mapperPipelineStepFromRs(ResultSet rs, int rowNum) throws SQLException {
         UUID stepId = (UUID) rs.getObject("step_id");
         UUID providerId = (UUID) rs.getObject("provider_id");
         String inputType = rs.getString("input_type");
@@ -182,6 +180,7 @@ public class PipelineDAOImpl implements PipelineDAO {
         String providerDescription = rs.getString("provider_description");
         Provider provider = Provider.createWithPartialValues(providerId, providerName, providerDescription);
 
-        return PipelineStep.of(stepId, provider, inputType, outputType, jsonUtil.retrieveStepParams(params), stepNumber);
+        return PipelineStep.of(stepId, provider, inputType, outputType, jsonUtil.retrieveStepParams(params), stepNumber,
+                Pipeline.createWithOnlyId((UUID) rs.getObject("pipeline_id")));
     }
 }

@@ -20,6 +20,8 @@ public class Pipeline {
         this.project = project;
         this.description = description;
         this.steps = steps;
+
+        steps.forEach(step -> step.setPipeline(this));
     }
 
     private Pipeline(UUID id, String description) {
@@ -32,8 +34,12 @@ public class Pipeline {
         return new Pipeline(id, description);
     }
 
-    public static Pipeline createWithoutProject(UUID id, String description, List<PipelineStep> steps) {
-        return new Pipeline(id, null, description, steps);
+    public static Pipeline createWithOnlyId(UUID id) {
+        return new Pipeline(id);
+    }
+
+    public Pipeline(UUID id) {
+        this.id = id;
     }
 
     public Pipeline(UUID id, Project project, String description, PipelineStep step) {
