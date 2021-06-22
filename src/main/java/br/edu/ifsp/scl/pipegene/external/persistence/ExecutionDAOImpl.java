@@ -3,6 +3,8 @@ package br.edu.ifsp.scl.pipegene.external.persistence;
 import br.edu.ifsp.scl.pipegene.domain.*;
 import br.edu.ifsp.scl.pipegene.external.persistence.util.JsonUtil;
 import br.edu.ifsp.scl.pipegene.usecases.execution.gateway.ExecutionDAO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -24,6 +26,7 @@ import static java.util.stream.Collectors.groupingBy;
 @Repository
 public class ExecutionDAOImpl implements ExecutionDAO {
 
+    private final Logger logger = LoggerFactory.getLogger(ExecutionDAOImpl.class);
     private final JdbcTemplate jdbcTemplate;
     private final JsonUtil jsonUtil;
 
@@ -115,16 +118,24 @@ public class ExecutionDAOImpl implements ExecutionDAO {
     @Transactional
     @Override
     public Optional<Execution> findExecutionByExecutionId(UUID executionId) {
-        Execution execution = jdbcTemplate.queryForObject(selectExecutionByIdQuery, this::mapperExecutionFromRs,
-                executionId);
+        try {
+            logger.debug("queries.sql.execution-dao.select.execution-by-id:\n" +
+                    selectExecutionByIdQuery.replaceFirst("\\?", executionId.toString()));
 
-        if (Objects.nonNull(execution)) {
+            Execution execution = jdbcTemplate.queryForObject(selectExecutionByIdQuery, this::mapperExecutionFromRs,
+                    executionId);
+
+            if (Objects.isNull(execution)) {
+                throw new IllegalStateException();
+            }
+
             List<ExecutionStep> steps = findExecutionStepsByExecutionId(executionId);
             execution.setSteps(steps);
 
             return Optional.of(execution);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     private Execution mapperExecutionFromRs(ResultSet rs, int rowNum) throws SQLException {
@@ -152,6 +163,9 @@ public class ExecutionDAOImpl implements ExecutionDAO {
     }
 
     private List<ExecutionStep> findExecutionStepsByExecutionId(UUID executionId) {
+        logger.debug("queries.sql.execution-dao.select.execution-steps-by-execution-id:\n"
+                + selectExecutionStepsByExecutionIdQuery.replaceFirst("\\?", executionId.toString()));
+
         return jdbcTemplate.query(selectExecutionStepsByExecutionIdQuery, (rs, rowNum) -> {
             try {
                 UUID providerId = (UUID) rs.getObject("provider_id");

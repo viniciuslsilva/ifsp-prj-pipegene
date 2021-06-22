@@ -49,7 +49,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
         logger.info(execution.toString());
 
         ExecutionStep executionStep = execution.getFirstStep();
-        logger.info("Expected: 1 Actual: " + executionStep.getStepNumber().toString());
+
         Provider provider = providerDAO
                 .findProviderById(executionStep.getProvider().getId())
                 .orElseThrow();
@@ -58,7 +58,9 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
 
         File file = storageService.getObject(execution.getDataset());
 
-        logger.info("Sending queue element " + executionQueueElement.getId() + " to provider: " + provider.getId());
+        logger.info("Starting execution: " + executionStep.getExecutionId().toString());
+        logger.debug("Starting execution_step_id: " + executionStep.getId().toString() +
+                " | step_number: " + executionStep.getStepNumber());
 
         callProviderClient(execution, executionStep, provider, file);
         logger.info("Update execution in database");
@@ -89,11 +91,14 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
             throw new IllegalStateException();
         }
 
+        logger.debug("Processing execution result " + execution.getId().toString() + " from provider_id " + providerId);
+
         if (providerExecutionResultRequest.getStatus().equals(ProviderExecutionResultStatus.SUCCESS)) {
             execution.setCurrentExecutionStepState(ExecutionStepState.SUCCESS);
             if (execution.hasNextStep()) {
                 applyNextExecution(execution, providerExecutionResultRequest);
             } else {
+                logger.debug("Finish execution!");
                 execution.finishExecution(providerExecutionResultRequest.getUri());
                 executionDAO.updateExecution(execution);
             }
@@ -101,10 +106,15 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
     }
 
     private void applyNextExecution(Execution execution, ProviderExecutionResultRequest providerExecutionResultRequest) {
+        logger.debug("Starting next execution");
+
         ExecutionStep executionStep = execution.getNextStep();
         Provider provider = providerDAO
                 .findProviderById(executionStep.getProvider().getId())
                 .orElseThrow();
+
+        logger.debug("Next execution is " + executionStep.getId() + " | step_number: " + executionStep.getStepNumber() +
+                " | provider_id: " + provider.getId());
 
         File fileToSend = null;
         try {
@@ -124,17 +134,20 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
                 fileToSend.delete();
             }
         }
+        logger.debug("Next execution started with success, update execution in database");
         executionDAO.updateExecution(execution);
     }
 
     private void callProviderClient(Execution execution, ExecutionStep step, Provider provider, File file) {
         try {
+            logger.debug("Call provider client");
             execution.setCurrentStep(step.getStepNumber());
             ProviderClientRequest request = new ProviderClientRequest(execution.getId(), step.getId(), provider.getUrl(),
                     file, step.getParams());
             providerClient.processRequest(request);
             execution.setCurrentExecutionStepState(ExecutionStepState.IN_PROGRESS);
         } catch (Exception e) {
+            logger.error("Provider client returns a error");
             execution.setCurrentExecutionStepState(ExecutionStepState.ERROR);
             execution.setStatus(ExecutionStatusEnum.ERROR);
             execution.setErrorMessage("Unexpected error occurred, please contact to support!");

@@ -17,8 +17,11 @@ public class Execution {
     private Integer currentStep = 0;
 
     public ExecutionStep getFirstStep() {
+        ExecutionStep step = steps.stream()
+                .min(Comparator.comparing(ExecutionStep::getStepNumber))
+                .orElseThrow(NoSuchElementException::new);
         status = ExecutionStatusEnum.IN_PROGRESS;
-        return steps.get(0);
+        return step;
     }
 
     public UUID getProviderIdFromCurrentStep() {
@@ -79,6 +82,7 @@ public class Execution {
     public static Execution createWithWaitingStatus(UUID id, Pipeline pipeline, Dataset dataset, String description) {
         List<ExecutionStep> executionSteps = pipeline.getSteps().stream()
                 .map(p -> ExecutionStep.createFromPipelineStep(p, id))
+                .sorted(Comparator.comparing(ExecutionStep::getStepNumber))
                 .collect(Collectors.toList());
 
         return new Execution(id, pipeline, dataset, description, ExecutionStatusEnum.WAITING, executionSteps);
@@ -136,11 +140,14 @@ public class Execution {
     }
 
     public List<ExecutionStep> getSteps() {
-        return new ArrayList<>(steps);
+        return steps.stream()
+                .sorted(Comparator.comparing(ExecutionStep::getStepNumber))
+                .collect(Collectors.toList());
     }
 
     public void setSteps(List<ExecutionStep> steps) {
         this.steps.addAll(steps);
+        steps.sort(Comparator.comparing(ExecutionStep::getStepNumber));
     }
 
     public Dataset getDataset() {
