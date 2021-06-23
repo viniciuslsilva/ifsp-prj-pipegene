@@ -2,14 +2,12 @@ package br.edu.ifsp.scl.pipegene.web.controller;
 
 import br.edu.ifsp.scl.pipegene.configuration.security.AuthenticationFacade;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
-import br.edu.ifsp.scl.pipegene.usecases.account.ApplicationUser;
 import br.edu.ifsp.scl.pipegene.usecases.execution.ExecutionTransaction;
 import br.edu.ifsp.scl.pipegene.usecases.provider.ProviderService;
 import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultRequest;
 import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderRequest;
 import br.edu.ifsp.scl.pipegene.web.model.provider.response.ProviderResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;

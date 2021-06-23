@@ -1,7 +1,7 @@
 package br.edu.ifsp.scl.pipegene.configuration.security.jwt;
 
 import br.edu.ifsp.scl.pipegene.configuration.properties.model.JwtProperties;
-import br.edu.ifsp.scl.pipegene.usecases.account.ApplicationUser;
+import br.edu.ifsp.scl.pipegene.usecases.account.model.ApplicationUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,13 +12,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.UUID;
 
 public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -62,7 +60,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
         String token = Jwts.builder()
                 .setSubject(user.getId().toString())
 //                .claim("authorities", authResult.getAuthorities())
-//                .claim("name", user.getUsername())
+                .claim("name", user.getName())
+                .claim("userId", user.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))
                 .signWith(secretKey)

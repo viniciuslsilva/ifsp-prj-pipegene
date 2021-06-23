@@ -152,12 +152,14 @@ ALTER TABLE pipegine_platform.execution_step
 CREATE TABLE pipegine_platform.application_user(
     id uuid NOT NULL,
     name varchar NOT NULL,
-    username varchar NOT NULL,
+    username varchar NOT NULL UNIQUE,
     password varchar NOT NULL,
-    isAccountNonExpired boolean default false,
-    isAccountNonLocked boolean default false,
-    isCredentialsNonExpired boolean default false,
-    isEnabled boolean default false
+    orcid varchar,
+    github varchar,
+    is_account_non_expired boolean default false,
+    is_account_nonLocked boolean default false,
+    is_credentials_non_expired boolean default false,
+    is_enabled boolean default false
 );
 
 ALTER TABLE pipegine_platform.application_user OWNER TO "pipegine";

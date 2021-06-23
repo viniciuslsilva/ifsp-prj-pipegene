@@ -75,7 +75,9 @@ public class ExecutionDAOImpl implements ExecutionDAO {
             Execution execution = jdbcTemplate.queryForObject(selectExecutionByIdAndProjectIdQuery,
                     this::mapperExecutionFromRs, executionId, projectId);
 
-            if (Objects.isNull(execution)) { throw new IllegalStateException(); }
+            if (Objects.isNull(execution)) {
+                throw new IllegalStateException();
+            }
             List<ExecutionStep> steps = findExecutionStepsByExecutionId(executionId);
             execution.setSteps(steps);
 
@@ -193,31 +195,35 @@ public class ExecutionDAOImpl implements ExecutionDAO {
     private List<ExecutionStep> findExecutionStepsByExecutionIds(Collection<UUID> executionIds) {
         Object[] ids = executionIds.toArray();
 
-        return jdbcTemplate.query(selectExecutionStepsByExecutionIdsQuery,
-                ps -> ps.setObject(1, ps.getConnection().createArrayOf("uuid", ids)),
-                (rs, rowNum) -> {
-                    try {
-                        UUID providerId = (UUID) rs.getObject("provider_id");
-                        String providerName = rs.getString("provider_name");
-                        String providerDescription = rs.getString("provider_description");
-                        Provider provider = Provider.createWithPartialValues(providerId, providerName, providerDescription);
+        try {
+            return jdbcTemplate.query(selectExecutionStepsByExecutionIdsQuery,
+                    ps -> ps.setObject(1, ps.getConnection().createArrayOf("uuid", ids)),
+                    (rs, rowNum) -> {
+                        try {
+                            UUID providerId = (UUID) rs.getObject("provider_id");
+                            String providerName = rs.getString("provider_name");
+                            String providerDescription = rs.getString("provider_description");
+                            Provider provider = Provider.createWithPartialValues(providerId, providerName, providerDescription);
 
-                        return ExecutionStep.of(
-                                (UUID) rs.getObject("id"),
-                                (UUID) rs.getObject("execution_id"),
-                                provider,
-                                rs.getString("input_type"),
-                                rs.getString("output_type"),
-                                ExecutionStepState.valueOf(rs.getString("state")),
-                                jsonUtil.retrieveStepParams(rs.getString("params")),
-                                rs.getInt("step_number")
-                        );
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw new SQLException();
+                            return ExecutionStep.of(
+                                    (UUID) rs.getObject("id"),
+                                    (UUID) rs.getObject("execution_id"),
+                                    provider,
+                                    rs.getString("input_type"),
+                                    rs.getString("output_type"),
+                                    ExecutionStepState.valueOf(rs.getString("state")),
+                                    jsonUtil.retrieveStepParams(rs.getString("params")),
+                                    rs.getInt("step_number")
+                            );
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            throw new SQLException();
+                        }
                     }
-                }
-        );
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
     }
 
 

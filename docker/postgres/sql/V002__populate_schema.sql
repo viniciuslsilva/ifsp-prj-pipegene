@@ -1,7 +1,9 @@
 \connect "pipegine"
 
-insert into pipegine_platform.application_user(id, name, username, password)
-    values ('78cec5db-6396-4fd9-803f-1fd469d76330'::uuid, 'vini', 'user', 'pass');
+insert into pipegine_platform.application_user(id, name, username, password, is_account_non_expired,
+    is_account_nonLocked, is_credentials_non_expired, is_enabled)
+    values ('78cec5db-6396-4fd9-803f-1fd469d76330'::uuid, 'vini', 'vini',
+        '$2a$10$M2lu6nBJ4yCdJ/qtbT7aZeofmxsFqYlMQtz1M2QQgRm1sCwTi2i/m', true, true, true, true);
 
 insert into pipegine_platform.provider(id, name, description, url, input_supported_types, output_supported_types, owner_id)
     values('78cec5db-6396-4fd9-803f-1fd469d76312'::uuid, 'name provider', 'desc provider', 'http://localhost:5000',

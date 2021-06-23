@@ -2,7 +2,6 @@ package br.edu.ifsp.scl.pipegene.external.persistence;
 
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.domain.ProviderOperation;
-import br.edu.ifsp.scl.pipegene.external.persistence.entities.ProviderEntity;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderDAO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -15,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static br.edu.ifsp.scl.pipegene.external.persistence.ProjectDAOImpl.OWNER_ID;
 

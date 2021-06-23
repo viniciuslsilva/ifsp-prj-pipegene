@@ -34,6 +34,15 @@ spring:
 
 queries:
   sql:
+    application-user-dao:
+      insert:
+        application-user: >
+          INSERT INTO pipegine_platform.application_user(id, name, username, password, orcid, github,
+            is_account_non_expired, is_account_nonLocked, is_credentials_non_expired, is_enabled)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      select:
+        application-user-by-username: >
+          SELECT * FROM pipegine_platform.application_user where username=?
     project-dao:
       insert:
         project: >
