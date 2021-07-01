@@ -29,7 +29,8 @@ ALTER TABLE pipegine_platform.dataset
     ADD CONSTRAINT dataset_pkey PRIMARY KEY (id);
 
 ALTER TABLE pipegine_platform.dataset
-    ADD CONSTRAINT dataset_project_id_fkey FOREIGN KEY (project_id) REFERENCES pipegine_platform.project(id);
+    ADD CONSTRAINT dataset_project_id_fkey FOREIGN KEY (project_id)
+        REFERENCES pipegine_platform.project(id) ON DELETE CASCADE;
 
 
 CREATE TABLE pipegine_platform.provider(
@@ -61,7 +62,8 @@ ALTER TABLE pipegine_platform.pipeline
     ADD CONSTRAINT pipeline_pkey PRIMARY KEY (id);
 
 ALTER TABLE pipegine_platform.pipeline
-    ADD CONSTRAINT pipeline_project_id_fkey FOREIGN KEY (project_id) REFERENCES pipegine_platform.project(id);
+    ADD CONSTRAINT pipeline_project_id_fkey FOREIGN KEY (project_id)
+        REFERENCES pipegine_platform.project(id) ON DELETE CASCADE;
 
 
 CREATE TABLE pipegine_platform.pipeline_step(
@@ -80,11 +82,13 @@ ALTER TABLE pipegine_platform.pipeline_step
     ADD CONSTRAINT pipeline_step_pkey PRIMARY KEY (step_id);
 
 ALTER TABLE pipegine_platform.pipeline_step
-    ADD CONSTRAINT pipeline_step_pipeline_id_fkey FOREIGN KEY (pipeline_id) REFERENCES pipegine_platform.pipeline(id);
+    ADD CONSTRAINT pipeline_step_pipeline_id_fkey FOREIGN KEY (pipeline_id)
+        REFERENCES pipegine_platform.pipeline(id) ON DELETE CASCADE;
 
 
 ALTER TABLE pipegine_platform.pipeline_step
-    ADD CONSTRAINT pipeline_step_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES pipegine_platform.provider(id);
+    ADD CONSTRAINT pipeline_step_provider_id_fkey FOREIGN KEY (provider_id)
+        REFERENCES pipegine_platform.provider(id) ON DELETE CASCADE;
 
 
 CREATE TYPE pipegine_platform.execution_status AS ENUM (
@@ -111,10 +115,12 @@ ALTER TABLE pipegine_platform.execution
     ADD CONSTRAINT execution_pkey PRIMARY KEY (id);
 
 ALTER TABLE pipegine_platform.execution
-    ADD CONSTRAINT execution_pipeline_id_fkey FOREIGN KEY (pipeline_id) REFERENCES pipegine_platform.pipeline(id);
+    ADD CONSTRAINT execution_pipeline_id_fkey FOREIGN KEY (pipeline_id)
+        REFERENCES pipegine_platform.pipeline(id) ON DELETE CASCADE;
 
 ALTER TABLE pipegine_platform.execution
-    ADD CONSTRAINT execution_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES pipegine_platform.dataset(id);
+    ADD CONSTRAINT execution_dataset_id_fkey FOREIGN KEY (dataset_id)
+        REFERENCES pipegine_platform.dataset(id) ON DELETE CASCADE;
 
 
 CREATE TYPE pipegine_platform.execution_step_state AS ENUM (
@@ -143,7 +149,8 @@ ALTER TABLE pipegine_platform.execution_step
     ADD CONSTRAINT execution_step_pkey PRIMARY KEY (id);
 
 ALTER TABLE pipegine_platform.execution_step
-    ADD CONSTRAINT execution_step_execution_id_fkey FOREIGN KEY (execution_id) REFERENCES pipegine_platform.execution(id);
+    ADD CONSTRAINT execution_step_execution_id_fkey FOREIGN KEY (execution_id)
+        REFERENCES pipegine_platform.execution(id) ON DELETE CASCADE;
 
 ALTER TABLE pipegine_platform.execution_step
     ADD CONSTRAINT execution_step_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES pipegine_platform.provider(id);
@@ -168,7 +175,8 @@ ALTER TABLE pipegine_platform.application_user
     ADD CONSTRAINT application_user_pkey PRIMARY KEY (id);
 
 ALTER TABLE pipegine_platform.project
-    ADD CONSTRAINT project_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES pipegine_platform.application_user(id);
+    ADD CONSTRAINT project_owner_id_fkey FOREIGN KEY (owner_id)
+        REFERENCES pipegine_platform.application_user(id) ON DELETE CASCADE;
 
 ALTER TABLE pipegine_platform.provider
     ADD CONSTRAINT provider_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES pipegine_platform.application_user(id);

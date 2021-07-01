@@ -7,6 +7,7 @@ import br.edu.ifsp.scl.pipegene.usecases.execution.queue.ExecutionQueueElement;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ObjectStorageService;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderClient;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderDAO;
+import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
 import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultRequest;
 import br.edu.ifsp.scl.pipegene.web.model.provider.request.ProviderExecutionResultStatus;
 import org.slf4j.Logger;
@@ -72,7 +73,7 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
         Boolean isValid = executionDAO.existsExecutionIdAndStepIdForProvider(executionId, stepId, providerId);
 
         if (!isValid) {
-            throw new IllegalArgumentException();
+            throw new ResourceNotFoundException("Not found execution for the data sent, please check and try again");
         }
     }
 
@@ -83,13 +84,13 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
                 .findExecutionByExecutionId(executionId)
                 .orElseThrow();
 
-        if (!execution.getProviderIdFromCurrentStep().equals(providerId)) {
-            throw new IllegalStateException();
-        }
-
-        if (!execution.getStepIdFromCurrentStep().equals(stepId)) {
-            throw new IllegalStateException();
-        }
+//        if (!execution.getProviderIdFromCurrentStep().equals(providerId)) {
+//            throw new IllegalStateException();
+//        }
+//
+//        if (!execution.getStepIdFromCurrentStep().equals(stepId)) {
+//            throw new IllegalStateException();
+//        }
 
         logger.debug("Processing execution result " + execution.getId().toString() + " from provider_id " + providerId);
 
@@ -157,12 +158,12 @@ public class ExecutionTransactionImpl implements ExecutionTransaction {
     }
 
     private void validateExecutionDetailsWithProviderFound(Provider provider, ExecutionStep executionStep) {
-        if (!provider.isInputSupportedType(executionStep.getInputType())) {
-            throw new IllegalArgumentException();
-        }
-
-        if (!provider.isOutputSupportedType(executionStep.getOutputType())) {
-            throw new IllegalArgumentException();
-        }
+//        if (!provider.isInputSupportedType(executionStep.getInputType())) {
+//            throw new IllegalArgumentException();
+//        }
+//
+//        if (!provider.isOutputSupportedType(executionStep.getOutputType())) {
+//            throw new IllegalArgumentException();
+//        }
     }
 }

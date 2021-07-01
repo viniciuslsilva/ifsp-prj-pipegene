@@ -19,7 +19,7 @@ public class CreatePipelineRequest {
     }
 
     public List<PipelineStepRequest> getSteps() {
-        return new ArrayList<>(steps);
+        return steps;
     }
 
     public String getDescription() {

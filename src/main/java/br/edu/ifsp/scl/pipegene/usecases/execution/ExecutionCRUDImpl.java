@@ -50,6 +50,7 @@ public class ExecutionCRUDImpl implements ExecutionCRUD {
         UUID executionId = queueService.add(request);
         Dataset dataset = project.findDatasetById(request.getDatasetId());
         Pipeline pipeline = project.findPipelineById(request.getPipelineId());
+        pipeline.setFirstInputType(dataset.getFileType());
 
         Execution execution = Execution.createWithWaitingStatus(executionId, pipeline, dataset,
                 request.getDescription());

@@ -1,5 +1,6 @@
 package br.edu.ifsp.scl.pipegene.external.persistence;
 
+import br.edu.ifsp.scl.pipegene.configuration.security.IAuthenticationFacade;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.domain.ProviderOperation;
 import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderDAO;
@@ -15,16 +16,20 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static br.edu.ifsp.scl.pipegene.external.persistence.ProjectDAOImpl.OWNER_ID;
-
 @Repository
 public class ProviderDAOImpl implements ProviderDAO {
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
 
+    @Deprecated
+    private final IAuthenticationFacade authentication;
+
     @Value("${queries.sql.provider-dao.select.provider-by-id}")
     private String selectProviderByIdQuery;
+
+    @Value("${queries.sql.provider-dao.select.providers-by-ids}")
+    private String selectProvidersByIdsQuery;
 
     @Value("${queries.sql.provider-dao.select.provider-all}")
     private String selectAllProvidersQuery;
@@ -32,9 +37,10 @@ public class ProviderDAOImpl implements ProviderDAO {
     @Value("${queries.sql.provider-dao.insert.provider}")
     private String insertProviderQuery;
 
-    public ProviderDAOImpl(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
+    public ProviderDAOImpl(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper, IAuthenticationFacade authentication) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
+        this.authentication = authentication;
     }
 
     @Override
@@ -46,6 +52,13 @@ public class ProviderDAOImpl implements ProviderDAO {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public List<Provider> findProvidersByIds(Collection<UUID> ids) {
+        return jdbcTemplate.query(selectProvidersByIdsQuery,
+                ps -> ps.setObject(1, ps.getConnection().createArrayOf("uuid", ids.toArray())),
+                this::mapperToProvider);
     }
 
     @Override
@@ -70,7 +83,8 @@ public class ProviderDAOImpl implements ProviderDAO {
         try {
             String operationStr = rs.getString("operations");
             List<ProviderOperation> operations = Objects.isNull(operationStr) ? Collections.emptyList()
-                    : objectMapper.readValue(operationStr, new TypeReference<>() {});
+                    : objectMapper.readValue(operationStr, new TypeReference<>() {
+            });
 
             return Provider.createWithAllValues(id, name, description, url, inputSupportedTypes, outputSupportedTypes,
                     operations);
@@ -92,7 +106,7 @@ public class ProviderDAOImpl implements ProviderDAO {
 
         jdbcTemplate.update(insertProviderQuery, providerId, provider.getName(), provider.getDescription(),
                 provider.getUrl(), String.join(",", provider.getInputSupportedTypes()),
-                String.join(",", provider.getOutputSupportedTypes()), operations, OWNER_ID);
+                String.join(",", provider.getOutputSupportedTypes()), operations, authentication.getUserAuthenticatedId());
 
         return provider.getNewInstanceWithId(providerId);
     }

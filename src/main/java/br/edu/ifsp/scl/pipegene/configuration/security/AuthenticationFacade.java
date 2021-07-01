@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-import static br.edu.ifsp.scl.pipegene.external.persistence.ProjectDAOImpl.OWNER_ID;
-
 @Component
 public class AuthenticationFacade implements IAuthenticationFacade {
 
@@ -18,7 +16,6 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
     @Override
     public UUID getUserAuthenticatedId() {
-        return OWNER_ID;
-        // return (UUID) getAuthentication().getPrincipal();
+        return (UUID) getAuthentication().getPrincipal();
     }
 }

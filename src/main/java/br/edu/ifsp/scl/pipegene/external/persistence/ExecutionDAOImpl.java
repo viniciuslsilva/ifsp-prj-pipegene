@@ -112,8 +112,13 @@ public class ExecutionDAOImpl implements ExecutionDAO {
 
     @Override
     public Boolean existsExecutionIdAndStepIdForProvider(UUID executionId, UUID stepId, UUID providerId) {
+        logger.debug("queries.sql.execution-dao.exists.execution-id-step-id-provider-id:\n" +
+                existsExecutionStepProviderQuery.replaceFirst("\\?", String.format("'%s'", executionId.toString()))
+                        .replaceFirst("\\?", String.format("'%s'", stepId.toString())));
+
+
         Boolean exists = jdbcTemplate.queryForObject(existsExecutionStepProviderQuery, Boolean.class,
-                executionId, stepId, providerId);
+                executionId, stepId);
         return Objects.nonNull(exists) && exists;
     }
 

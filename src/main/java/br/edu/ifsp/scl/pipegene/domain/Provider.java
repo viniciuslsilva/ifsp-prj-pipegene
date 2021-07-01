@@ -43,6 +43,21 @@ public class Provider {
         this.description = description;
     }
 
+    public static Provider createWithPartialValues(UUID id, String name, String description,
+                                                   List<String> inputSupportedTypes,
+                                                   List<String> outputSupportedTypes) {
+        return new Provider(id, name, description, inputSupportedTypes, outputSupportedTypes);
+    }
+
+    private Provider(UUID id, String name, String description, List<String> inputSupportedTypes,
+                     List<String> outputSupportedTypes) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.inputSupportedTypes = inputSupportedTypes;
+        this.outputSupportedTypes = outputSupportedTypes;
+    }
+
     public boolean isInputSupportedType(String inputType) {
         return inputSupportedTypes.contains(inputType);
     }

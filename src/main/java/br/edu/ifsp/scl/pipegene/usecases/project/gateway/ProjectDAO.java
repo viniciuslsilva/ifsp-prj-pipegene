@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ProjectDAO {
 
-    Project saveNewProject(String name, String description, List<Dataset> datasets);
+    Project saveNewProject(String name, String description, List<Dataset> datasets, UUID ownerId);
 
     Project updateProject(Project project);
 
@@ -19,4 +19,6 @@ public interface ProjectDAO {
     List<Project> findAllProjects();
 
     Boolean projectExists(UUID id);
+
+    boolean deleteProjectById(UUID id);
 }

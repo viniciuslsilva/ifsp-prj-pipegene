@@ -75,4 +75,7 @@ public class PipelineStep {
         this.pipeline = pipeline;
     }
 
+    public void setInputType(String type) {
+        inputType = type;
+    }
 }

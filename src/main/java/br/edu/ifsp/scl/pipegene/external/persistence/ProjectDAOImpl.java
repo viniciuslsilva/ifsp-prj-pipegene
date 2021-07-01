@@ -5,6 +5,7 @@ import br.edu.ifsp.scl.pipegene.domain.Pipeline;
 import br.edu.ifsp.scl.pipegene.domain.Project;
 import br.edu.ifsp.scl.pipegene.usecases.pipeline.gateway.PipelineDAO;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectDAO;
+import br.edu.ifsp.scl.pipegene.web.exception.GenericResourceException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -43,8 +44,14 @@ public class ProjectDAOImpl implements ProjectDAO {
     @Value("${queries.sql.project-dao.exists.project-id}")
     private String existsProjectIdQuery;
 
+    @Value("${queries.sql.project-dao.exists.execution-not-finished}")
+    private String existsProjectIdExecutionNotFinishedQuery;
+
     @Value("${queries.sql.project-dao.update.project}")
     private String updateProjectQuery;
+
+    @Value("${queries.sql.project-dao.delete.project-by-id}")
+    private String deleteProjectByIdQuery;
 
     public ProjectDAOImpl(JdbcTemplate jdbcTemplate, PipelineDAO pipelineDAO, DatasetDAO datasetDAO) {
         this.jdbcTemplate = jdbcTemplate;
@@ -54,9 +61,9 @@ public class ProjectDAOImpl implements ProjectDAO {
 
     @Transactional
     @Override
-    public Project saveNewProject(String name, String description, List<Dataset> datasets) {
+    public Project saveNewProject(String name, String description, List<Dataset> datasets, UUID ownerId) {
         UUID projectId = UUID.randomUUID();
-        jdbcTemplate.update(insertProjectQuery, projectId, name, description, OWNER_ID);
+        jdbcTemplate.update(insertProjectQuery, projectId, name, description, ownerId);
 
         jdbcTemplate.batchUpdate(insertDatasetQuery, new BatchPreparedStatementSetter() {
             @Override
@@ -72,7 +79,7 @@ public class ProjectDAOImpl implements ProjectDAO {
             }
         });
 
-        return Project.createWithoutPipelines(projectId, datasets, name, description, OWNER_ID);
+        return Project.createWithoutPipelines(projectId, datasets, name, description, ownerId);
     }
 
     @Override
@@ -138,6 +145,20 @@ public class ProjectDAOImpl implements ProjectDAO {
         return new ArrayList<>(projects.values());
     }
 
+    @Transactional
+    @Override
+    public boolean deleteProjectById(UUID id) {
+        Boolean existsExecutionNotFinished = jdbcTemplate.queryForObject(existsProjectIdExecutionNotFinishedQuery, Boolean.class, id);
+        if (Objects.nonNull(existsExecutionNotFinished) && existsExecutionNotFinished) {
+            return false;
+        }
+
+        if (jdbcTemplate.update(deleteProjectByIdQuery, id) != 1) {
+            throw new GenericResourceException("Unexpected error when try delete project with id=" + id, "Exclusion Error");
+        }
+
+        return true;
+    }
 
     private Project mapperProjectFromRs(ResultSet rs, int rowNum) throws SQLException {
         UUID id = (UUID) rs.getObject("id");

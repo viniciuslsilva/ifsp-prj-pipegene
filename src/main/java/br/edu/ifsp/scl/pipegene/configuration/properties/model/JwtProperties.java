@@ -1,10 +1,7 @@
 package br.edu.ifsp.scl.pipegene.configuration.properties.model;
 
-import io.jsonwebtoken.security.Keys;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
-
-import javax.crypto.SecretKey;
 
 public class JwtProperties {
 

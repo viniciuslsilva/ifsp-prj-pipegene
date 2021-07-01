@@ -10,8 +10,6 @@ import java.util.UUID;
 
 public interface PipelineDAO {
 
-    Boolean providerListIsValid(List<Provider> providers);
-
     Pipeline savePipeline(Pipeline pipeline);
 
     List<Pipeline> findAll(UUID projectId);

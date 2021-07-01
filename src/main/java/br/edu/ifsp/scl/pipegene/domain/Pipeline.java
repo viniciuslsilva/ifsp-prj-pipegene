@@ -87,4 +87,14 @@ public class Pipeline {
     public void sortedSteps() {
         steps.sort(Comparator.comparing(PipelineStep::getStepNumber));
     }
+
+    public void setFirstInputType(String fileType) {
+        PipelineStep step = steps.get(0);
+
+        if (!step.getProvider().isInputSupportedType(fileType)) {
+            throw new IllegalArgumentException();
+        }
+
+        step.setInputType(fileType);
+    }
 }

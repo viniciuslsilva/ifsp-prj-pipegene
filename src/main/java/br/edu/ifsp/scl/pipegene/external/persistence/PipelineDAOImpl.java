@@ -5,6 +5,7 @@ import br.edu.ifsp.scl.pipegene.domain.PipelineStep;
 import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.external.persistence.util.JsonUtil;
 import br.edu.ifsp.scl.pipegene.usecases.pipeline.gateway.PipelineDAO;
+import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderDAO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -53,11 +54,6 @@ public class PipelineDAOImpl implements PipelineDAO {
     public PipelineDAOImpl(JdbcTemplate jdbcTemplate, JsonUtil jsonUtil) {
         this.jdbcTemplate = jdbcTemplate;
         this.jsonUtil = jsonUtil;
-    }
-
-    @Override
-    public Boolean providerListIsValid(List<Provider> providers) {
-        return true;
     }
 
     @Transactional
@@ -153,7 +149,9 @@ public class PipelineDAOImpl implements PipelineDAO {
                 this::mapperPipelineStepFromRs);
         steps.forEach(step -> pipelineMap.get(step.getPipelineId()).addStep(step));
 
-        return pipelineMap.values();
+        return pipelineMap.values().stream()
+                .peek(Pipeline::sortedSteps)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -193,7 +191,16 @@ public class PipelineDAOImpl implements PipelineDAO {
 
         String providerName = rs.getString("provider_name");
         String providerDescription = rs.getString("provider_description");
-        Provider provider = Provider.createWithPartialValues(providerId, providerName, providerDescription);
+        List<String> inputSupportedTypes =  Arrays.stream(
+                rs.getString("provider_input_supported_types").split(",")
+        ).map(String::trim).collect(Collectors.toList());
+
+        List<String> outputSupportedTypes =  Arrays.stream(
+                rs.getString("provider_output_supported_types").split(",")
+        ).map(String::trim).collect(Collectors.toList());
+
+        Provider provider = Provider.createWithPartialValues(providerId, providerName, providerDescription,
+                inputSupportedTypes, outputSupportedTypes);
 
         return PipelineStep.of(stepId, provider, inputType, outputType, jsonUtil.retrieveStepParams(params), stepNumber,
                 Pipeline.createWithOnlyId((UUID) rs.getObject("pipeline_id")));

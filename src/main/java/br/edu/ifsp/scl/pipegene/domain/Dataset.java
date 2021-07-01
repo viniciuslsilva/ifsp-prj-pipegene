@@ -41,4 +41,12 @@ public class Dataset {
     public UUID getProjectId() {
         return project.getId();
     }
+
+    public String getFileType() {
+        int i = filename.lastIndexOf('.');
+        if (i > 0) {
+            return filename.substring(i+1);
+        }
+        return null;
+    }
 }

@@ -16,4 +16,6 @@ public interface ProjectCRUD {
     Project updateProjectById(UUID projectId, ProjectUpdateRequest request);
 
     List<Project> findAllProjects();
+
+    void deleteProjectById(UUID projectId);
 }

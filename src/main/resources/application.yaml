@@ -31,6 +31,11 @@ spring:
       maximumPoolSize: 10
       max-lifetime: 600000
 
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+
 
 queries:
   sql:
@@ -63,6 +68,19 @@ queries:
       exists:
         project-id: >
           SELECT EXISTS(SELECT 1 FROM pipegine_platform.project p WHERE p.id=?)
+
+        execution-not-finished: >
+          SELECT EXISTS (
+              SELECT 1 FROM pipegine_platform.execution e
+                  INNER JOIN pipegine_platform.pipeline p on e.pipeline_id = p.id
+              WHERE
+                  p.project_id=?
+                  AND (e.status = 'WAITING' OR e.status = 'IN_PROGRESS')
+          )
+
+      delete:
+        project-by-id: >
+          DELETE FROM pipegine_platform.project where id=?
 
       update:
         project: >
@@ -115,7 +133,9 @@ queries:
           SELECT
             ps.*,
             p.name provider_name,
-            p.description provider_description
+            p.description provider_description,
+            p.input_supported_types provider_input_supported_types,
+            p.output_supported_types provider_output_supported_types
           FROM pipegine_platform.pipeline_step ps
             INNER JOIN pipegine_platform.provider p ON p.id=ps.provider_id
           WHERE ps.pipeline_id=?
@@ -124,7 +144,9 @@ queries:
           SELECT
             ps.*,
             p.name provider_name,
-            p.description provider_description
+            p.description provider_description,
+            p.input_supported_types provider_input_supported_types,
+            p.output_supported_types provider_output_supported_types
           FROM pipegine_platform.pipeline_step ps
             INNER JOIN pipegine_platform.provider p ON p.id=ps.provider_id
           WHERE ps.pipeline_id=ANY(?)
@@ -137,6 +159,9 @@ queries:
       select:
         provider-by-id: >
           SELECT * FROM pipegine_platform.provider p WHERE p.id=?
+
+        providers-by-ids: >
+          SELECT * FROM pipegine_platform.provider p WHERE p.id=ANY(?)
 
         provider-all: >
           SELECT * FROM pipegine_platform.provider
@@ -215,7 +240,7 @@ queries:
           FROM pipegine_platform.execution_step e
             INNER JOIN pipegine_platform.provider p ON p.id=e.provider_id
           WHERE e.execution_id=?
-          ORDER BY e.step_number;
+          ORDER BY e.step_number ASC;
 
         execution-steps-by-execution-ids:
           SELECT
@@ -257,5 +282,5 @@ queries:
                   e.id=?
                   AND e.current_step=es.step_number
                   AND es.id=?
-                  AND es.provider_id=?
+                  -- AND es.provider_id=?
           )

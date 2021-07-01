@@ -10,6 +10,7 @@ public class Execution {
     private Dataset dataset;
     private String description;
     private ExecutionStatusEnum status;
+    // TODO ("Maybe a tree it's a good choice here")
     private List<ExecutionStep> steps;
 
     private URI executionResult;

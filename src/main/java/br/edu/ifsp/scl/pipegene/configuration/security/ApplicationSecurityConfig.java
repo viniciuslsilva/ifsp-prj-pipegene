@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -43,6 +44,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        String uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
+
         http
                 // if Spring MVC is on classpath and no CorsConfigurationSource is provided,
                 // Spring Security will use CORS configuration provided to Spring MVC
@@ -58,7 +62,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers( "/login").permitAll()
                 .antMatchers("/register").permitAll()
-//                .antMatchers("/v1/**").authenticated()
+                .regexMatchers(HttpMethod.POST,
+                        "/api/v1/providers/" + uuid + "/executions/" + uuid + "/steps/" + uuid).permitAll()
+                .antMatchers("/api/v1/**").authenticated()
                 .anyRequest()
                 .authenticated();
 

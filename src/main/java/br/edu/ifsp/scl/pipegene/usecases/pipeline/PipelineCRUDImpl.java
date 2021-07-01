@@ -4,29 +4,32 @@ import br.edu.ifsp.scl.pipegene.configuration.security.IAuthenticationFacade;
 import br.edu.ifsp.scl.pipegene.domain.PipelineStep;
 import br.edu.ifsp.scl.pipegene.domain.Pipeline;
 import br.edu.ifsp.scl.pipegene.domain.Project;
+import br.edu.ifsp.scl.pipegene.domain.Provider;
 import br.edu.ifsp.scl.pipegene.usecases.pipeline.gateway.PipelineDAO;
 import br.edu.ifsp.scl.pipegene.usecases.project.gateway.ProjectDAO;
+import br.edu.ifsp.scl.pipegene.usecases.provider.gateway.ProviderDAO;
 import br.edu.ifsp.scl.pipegene.web.exception.GenericResourceException;
 import br.edu.ifsp.scl.pipegene.web.exception.ResourceNotFoundException;
 import br.edu.ifsp.scl.pipegene.web.model.pipeline.request.CreatePipelineRequest;
 import br.edu.ifsp.scl.pipegene.web.model.pipeline.request.PipelineStepRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class PipelineCRUDImpl implements PipelineCRUD {
 
     private final ProjectDAO projectDAO;
+    private final ProviderDAO providerDAO;
     private final PipelineDAO pipelineDAO;
     private final IAuthenticationFacade authenticationFacade;
 
-    public PipelineCRUDImpl(ProjectDAO projectDAO, PipelineDAO pipelineDAO, IAuthenticationFacade authenticationFacade) {
+    public PipelineCRUDImpl(ProjectDAO projectDAO, ProviderDAO providerDAO, PipelineDAO pipelineDAO, IAuthenticationFacade authenticationFacade) {
         this.projectDAO = projectDAO;
+        this.providerDAO = providerDAO;
         this.pipelineDAO = pipelineDAO;
         this.authenticationFacade = authenticationFacade;
     }
@@ -39,25 +42,54 @@ public class PipelineCRUDImpl implements PipelineCRUD {
             throw new ResourceNotFoundException("Not found project with id: " + projectId);
         }
 
-        Project project = optionalProject.get();
-        Boolean pipelineRequestIsValid = pipelineDAO.providerListIsValid(
-                request.getSteps().stream()
-                        .map(PipelineStepRequest::convertToProvider)
-                        .collect(Collectors.toList())
-        );
-
-        if (!pipelineRequestIsValid) {
-            throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Pipeline Request");
-        }
-
         if (request.executionStepsIsEmpty()) {
             throw new GenericResourceException("Please, add one step", "Invalid Pipeline Request");
         }
 
-        List<PipelineStep> steps = mapToPipelineStep(request.getSteps());
-        Pipeline pipeline = Pipeline.createWithoutId(project, request.getDescription(), steps);
+        List<PipelineStepRequest> steps = request.getSteps();
+        validatePipelineSteps(steps);
+
+        Project project = optionalProject.get();
+        List<PipelineStep> pipelineSteps = mapToPipelineStep(steps);
+        Pipeline pipeline = Pipeline.createWithoutId(project, request.getDescription(), pipelineSteps);
 
         return pipelineDAO.savePipeline(pipeline);
+    }
+
+    private void validatePipelineSteps(List<PipelineStepRequest> steps) {
+        Set<UUID> providersIds = steps.stream().map(PipelineStepRequest::getProviderId).collect(Collectors.toSet());
+
+        Map<UUID, Provider> providersMap = providerDAO.findProvidersByIds(providersIds).stream()
+                .collect(Collectors.toMap(Provider::getId, Function.identity()));
+
+        if (providersMap.size() < providersIds.size()) {
+            throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Pipeline Request");
+        }
+
+        for (int i = 0; i < steps.size(); i++) {
+
+            PipelineStepRequest step = steps.get(i);
+            Provider provider = providersMap.get(step.getProviderId());
+
+            if ((i != 0) && !provider.isInputSupportedType(step.getInputType())) {
+                throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Pipeline Request");
+            }
+
+            if (!provider.isOutputSupportedType(step.getOutputType())) {
+                throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Pipeline Request");
+            }
+
+            // if has next step
+            if (i+ 1 < steps.size()) {
+                PipelineStepRequest nextStep = steps.get(i + 1);
+                Provider nextProvider = providersMap.get(nextStep.getProviderId());
+
+                if (!nextProvider.isInputSupportedType(step.getOutputType())) {
+                    throw new GenericResourceException("Please, verify provider id, inputType and outputType", "Invalid Pipeline Request");
+                }
+            }
+
+        }
     }
 
     private List<PipelineStep> mapToPipelineStep(List<PipelineStepRequest> pipelineStepRequest) {
