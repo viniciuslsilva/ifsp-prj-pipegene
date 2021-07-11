@@ -8,7 +8,7 @@ security:
     token-expiration-after-days: 14
 
 execution:
-  batch-size: 0
+  batch-size: 1
 
 cron:
   expression: '0/20 * * ? * *' #Every 10 seconds
@@ -16,7 +16,7 @@ cron:
 
 spring:
   application:
-    name: ifood-service-search
+    name: pipegine-service
   datasource:
     url: jdbc:postgresql://localhost:5432/pipegine?prepareThreshold=0
     username: pipegine-app
