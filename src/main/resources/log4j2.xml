@@ -14,6 +14,6 @@
             <AppenderRef ref="CONSOLE"/>
         </AsyncRoot>
         <!-- IFSP applications log level -->
-        <AsyncLogger level="${env:LOG_LEVEL:-INFO}" name="br.edu.ifsp"/>
+        <AsyncLogger level="${env:LOG_LEVEL:-DEBUG}" name="br.edu.ifsp"/>
     </Loggers>
 </Configuration>

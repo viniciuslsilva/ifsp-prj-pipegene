@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  pipegine-postgres:
+    build: ./postgres
+    container_name: pipegine-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=password
+    volumes:
+      - .volume/postgres:/var/lib/postgresql/data pipegine-postgres
+
+#  docker run -e POSTGRES_PASSWORD=password -e POSTGRES_USER=postgres -p 5432:5432 -v ${PWD}/.volume/postgres:/var/lib/postgresql/data pipegine-postgres
