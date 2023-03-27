@@ -1,10 +1,4 @@
-FROM postgres:10
-
-ENV POSTGIS_MAJOR 2.5
-
-RUN apt-get update \
-      && apt-get install -y --no-install-recommends \
-      && rm -rf /var/lib/apt/lists/*
+FROM postgres:15-alpine
 
 RUN mkdir -p /docker-entrypoint-initdb.d
 COPY ./sql/*.sql /docker-entrypoint-initdb.d/
